@@ -1,0 +1,21 @@
+<section>
+  <div class="page-header">
+    <h1>Times</h1>
+  </div>
+  <div class="list-group">
+    <a ng-repeat="time in vm.times" ui-sref="times.view({ timeId: time._id })" class="list-group-item">
+      <small class="list-group-item-text">
+        Posted on
+        <span ng-bind="time.created | date:'mediumDate'"></span>
+        by
+        <span ng-if="time.user" ng-bind="time.user.displayName"></span>
+        <span ng-if="!time.user">Deleted User</span>
+      </small>
+      <h4 class="list-group-item-heading" ng-bind="time.title"></h4>
+      <p class="list-group-item-text" ng-bind="time.content"></p>
+    </a>
+  </div>
+  <div class="alert alert-warning text-center" ng-if="vm.times.$resolved && !vm.times.length">
+    No times yet, why don't you <a ui-sref="times.create">create one</a>?
+  </div>
+</section>
