@@ -9,7 +9,7 @@ var path = require('path'),
   errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller'));
 
 /**
- * Create an time
+ * Create a time
  */
 exports.create = function (req, res) {
   var time = new Time(req.body);
@@ -33,21 +33,18 @@ exports.read = function (req, res) {
   // convert mongoose document to JSON
   var time = req.time ? req.time.toJSON() : {};
 
-  // Add a custom field to the Time, for determining if the current User is the "owner".
-  // NOTE: This field is NOT persisted to the database, since it doesn't exist in the Time model.
-  time.isCurrentUserOwner = req.user && time.user && time.user._id.toString() === req.user._id.toString() ? true : false;
-
   res.json(time);
 };
 
 /**
- * Update an time
+ * Update a time
  */
 exports.update = function (req, res) {
   var time = req.time;
 
-  time.title = req.body.title;
-  time.content = req.body.content;
+  time.hours = req.body.hours;
+  time.notes = req.body.notes;
+  time.date = req.body.date;
 
   time.save(function (err) {
     if (err) {
@@ -61,7 +58,7 @@ exports.update = function (req, res) {
 };
 
 /**
- * Delete an time
+ * Delete a time
  */
 exports.delete = function (req, res) {
   var time = req.time;
@@ -81,7 +78,15 @@ exports.delete = function (req, res) {
  * List of Times
  */
 exports.list = function (req, res) {
-  Time.find().sort('-created').populate('user', 'displayName').exec(function (err, times) {
+  
+  var filter = {};
+  
+  // if not admin or manager, you can only get what is yours
+  if(req.user.roles.indexOf('admin') === -1 && req.user.roles.indexOf('manager') === -1) {
+    filter.user = mongoose.Types.ObjectId(req.user.id);
+  }
+  
+  Time.find(filter).sort('-created').populate('user', 'displayName').exec(function (err, times) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)

@@ -14,16 +14,19 @@ var TimeSchema = new Schema({
     type: Date,
     default: Date.now
   },
-  title: {
+  notes: {
     type: String,
     default: '',
     trim: true,
-    required: 'Title cannot be blank'
   },
-  content: {
-    type: String,
-    default: '',
-    trim: true
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+  hours: {
+    type: Number,
+    required: 'Hours cannot be blank',
+    min: [0, 'Worked hours must be 0 or higher.']
   },
   user: {
     type: Schema.ObjectId,

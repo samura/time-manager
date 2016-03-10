@@ -40,7 +40,6 @@ describe('User CRUD tests', function () {
       email: 'test@test.com',
       username: credentials.username,
       password: credentials.password,
-      provider: 'local'
     };
 
     user = new User(_user);
@@ -110,7 +109,7 @@ describe('User CRUD tests', function () {
       });
   });
 
-  it('should not be able to retrieve a list of users if not admin', function (done) {
+  it('should not be able to retrieve a list of users if normal user', function (done) {
     agent.post('/api/auth/signin')
       .send(credentials)
       .expect(200)
@@ -166,6 +165,69 @@ describe('User CRUD tests', function () {
 
   it('should be able to get a single user details if admin', function (done) {
     user.roles = ['user', 'admin'];
+
+    user.save(function (err) {
+      should.not.exist(err);
+      agent.post('/api/auth/signin')
+        .send(credentials)
+        .expect(200)
+        .end(function (signinErr, signinRes) {
+          // Handle signin error
+          if (signinErr) {
+            return done(signinErr);
+          }
+
+          // Get single user information from the database
+          agent.get('/api/users/' + user._id)
+            .expect(200)
+            .end(function (userInfoErr, userInfoRes) {
+              if (userInfoErr) {
+                return done(userInfoErr);
+              }
+
+              userInfoRes.body.should.be.instanceof(Object);
+              userInfoRes.body._id.should.be.equal(String(user._id));
+
+              // Call the assertion callback
+              return done();
+            });
+        });
+    });
+  });
+  
+  it('should be able to retrieve a list of users if manager', function (done) {
+    user.roles = ['user', 'manager'];
+
+    user.save(function (err) {
+      should.not.exist(err);
+      agent.post('/api/auth/signin')
+        .send(credentials)
+        .expect(200)
+        .end(function (signinErr, signinRes) {
+          // Handle signin error
+          if (signinErr) {
+            return done(signinErr);
+          }
+
+          // Request list of users
+          agent.get('/api/users')
+            .expect(200)
+            .end(function (usersGetErr, usersGetRes) {
+              if (usersGetErr) {
+                return done(usersGetErr);
+              }
+
+              usersGetRes.body.should.be.instanceof(Array).and.have.lengthOf(1);
+
+              // Call the assertion callback
+              return done();
+            });
+        });
+    });
+  });
+
+  it('should be able to get a single user details if manager', function (done) {
+    user.roles = ['user', 'manager'];
 
     user.save(function (err) {
       should.not.exist(err);
@@ -271,6 +333,123 @@ describe('User CRUD tests', function () {
     });
   });
 
+  it('should be able to update a single user details if manager', function (done) {
+    user.roles = ['user', 'manager'];
+
+    user.save(function (err) {
+      should.not.exist(err);
+      agent.post('/api/auth/signin')
+        .send(credentials)
+        .expect(200)
+        .end(function (signinErr, signinRes) {
+          // Handle signin error
+          if (signinErr) {
+            return done(signinErr);
+          }
+
+          // Get single user information from the database
+
+          var userUpdate = {
+            firstName: 'admin_update_first',
+            lastName: 'admin_update_last',
+          };
+
+          agent.put('/api/users/' + user._id)
+            .send(userUpdate)
+            .expect(200)
+            .end(function (userInfoErr, userInfoRes) {
+              if (userInfoErr) {
+                return done(userInfoErr);
+              }
+
+              userInfoRes.body.should.be.instanceof(Object);
+              userInfoRes.body.firstName.should.be.equal('admin_update_first');
+              userInfoRes.body.lastName.should.be.equal('admin_update_last');
+              userInfoRes.body.roles.should.be.instanceof(Array).and.have.lengthOf(2);
+              userInfoRes.body._id.should.be.equal(String(user._id));
+
+              // Call the assertion callback
+              return done();
+            });
+        });
+    });
+  });
+  
+  it('should not be able to update a single user roles if manager', function (done) {
+    user.roles = ['user', 'manager'];
+
+    user.save(function (err) {
+      should.not.exist(err);
+      agent.post('/api/auth/signin')
+        .send(credentials)
+        .expect(200)
+        .end(function (signinErr, signinRes) {
+          // Handle signin error
+          if (signinErr) {
+            return done(signinErr);
+          }
+
+          // Get single user information from the database
+
+          var userUpdate = {
+            firstName: 'admin_update_first',
+            lastName: 'admin_update_last',
+            roles: ['admin'] // this should be ignored
+          };
+
+          agent.put('/api/users/' + user._id)
+            .send(userUpdate)
+            .expect(200)
+            .end(function (userInfoErr, userInfoRes) {
+              if (userInfoErr) {
+                return done(userInfoErr);
+              }
+
+              userInfoRes.body.should.be.instanceof(Object);
+              userInfoRes.body.firstName.should.be.equal('admin_update_first');
+              userInfoRes.body.lastName.should.be.equal('admin_update_last');
+              userInfoRes.body.roles.should.be.instanceof(Array).and.have.lengthOf(2);
+              userInfoRes.body._id.should.be.equal(String(user._id));
+
+              // Call the assertion callback
+              return done();
+            });
+        });
+    });
+  });
+  
+  it('should be able to delete a single user if manager', function (done) {
+    user.roles = ['user', 'manager'];
+
+    user.save(function (err) {
+      should.not.exist(err);
+      agent.post('/api/auth/signin')
+        .send(credentials)
+        .expect(200)
+        .end(function (signinErr, signinRes) {
+          // Handle signin error
+          if (signinErr) {
+            return done(signinErr);
+          }
+
+          agent.delete('/api/users/' + user._id)
+            //.send(userUpdate)
+            .expect(200)
+            .end(function (userInfoErr, userInfoRes) {
+              if (userInfoErr) {
+                return done(userInfoErr);
+              }
+
+              userInfoRes.body.should.be.instanceof(Object);
+              userInfoRes.body._id.should.be.equal(String(user._id));
+
+              // Call the assertion callback
+              return done();
+            });
+        });
+    });
+  });
+
   it('forgot password should return 400 for non-existent username', function (done) {
     user.roles = ['user'];
 
@@ -294,8 +473,6 @@ describe('User CRUD tests', function () {
   });
 
   it('forgot password should return 400 for no username provided', function (done) {
-    var provider = 'facebook';
-    user.provider = provider;
     user.roles = ['user'];
 
     user.save(function (err) {
@@ -312,30 +489,6 @@ describe('User CRUD tests', function () {
           }
 
           res.body.message.should.equal('Username field must not be blank');
-          return done();
-        });
-    });
-  });
-
-  it('forgot password should return 400 for non-local provider set for the user object', function (done) {
-    var provider = 'facebook';
-    user.provider = provider;
-    user.roles = ['user'];
-
-    user.save(function (err) {
-      should.not.exist(err);
-      agent.post('/api/auth/forgot')
-        .send({
-          username: user.username
-        })
-        .expect(400)
-        .end(function (err, res) {
-          // Handle error
-          if (err) {
-            return done(err);
-          }
-
-          res.body.message.should.equal('It seems like you signed up using your ' + user.provider + ' account');
           return done();
         });
     });
@@ -656,7 +809,7 @@ describe('User CRUD tests', function () {
     });
   });
 
-  it('should not be able to update own user details and add roles if not admin', function (done) {
+  it('should not be able to update own roles if not admin', function (done) {
     user.roles = ['user'];
 
     user.save(function (err) {
@@ -688,6 +841,48 @@ describe('User CRUD tests', function () {
               userInfoRes.body.firstName.should.be.equal('user_update_first');
               userInfoRes.body.lastName.should.be.equal('user_update_last');
               userInfoRes.body.roles.should.be.instanceof(Array).and.have.lengthOf(1);
+              userInfoRes.body.roles.indexOf('user').should.equal(0);
+              userInfoRes.body._id.should.be.equal(String(user._id));
+
+              // Call the assertion callback
+              return done();
+            });
+        });
+    });
+  });
+  
+  it('should not be able to update own roles if manager', function (done) {
+    user.roles = ['user', 'manager'];
+
+    user.save(function (err) {
+      should.not.exist(err);
+      agent.post('/api/auth/signin')
+        .send(credentials)
+        .expect(200)
+        .end(function (signinErr, signinRes) {
+          // Handle signin error
+          if (signinErr) {
+            return done(signinErr);
+          }
+
+          var userUpdate = {
+            firstName: 'user_update_first',
+            lastName: 'user_update_last',
+            roles: ['admin']
+          };
+
+          agent.put('/api/users')
+            .send(userUpdate)
+            .expect(200)
+            .end(function (userInfoErr, userInfoRes) {
+              if (userInfoErr) {
+                return done(userInfoErr);
+              }
+
+              userInfoRes.body.should.be.instanceof(Object);
+              userInfoRes.body.firstName.should.be.equal('user_update_first');
+              userInfoRes.body.lastName.should.be.equal('user_update_last');
+              userInfoRes.body.roles.should.be.instanceof(Array).and.have.lengthOf(2);
               userInfoRes.body.roles.indexOf('user').should.equal(0);
               userInfoRes.body._id.should.be.equal(String(user._id));
 

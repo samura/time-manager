@@ -17,7 +17,7 @@ var _ = require('lodash'),
 /**
  * Globals
  */
-var user1, admin1, userFromSeedConfig, adminFromSeedConfig, originalLogConfig;
+var user1, admin1, manager1, userFromSeedConfig, adminFromSeedConfig, managerFromSeedConfig, originalLogConfig;
 
 describe('Configuration Tests:', function () {
 
@@ -28,26 +28,36 @@ describe('Configuration Tests:', function () {
 
         user1 = {
           username: 'user_config_test',
-          provider: 'local',
           email: 'user_config_test_@localhost.com',
           firstName: 'User',
           lastName: 'Local',
           displayName: 'User Local',
-          roles: ['user']
+          roles: ['user'],
+          workingHoursPerDay: 4
         };
 
         admin1 = {
           username: 'admin_config_test',
-          provider: 'local',
           email: 'admin_config_test_@localhost.com',
           firstName: 'Admin',
           lastName: 'Local',
           displayName: 'Admin Local',
           roles: ['user', 'admin']
         };
+        
+        manager1 = {
+          username: 'manager_config_test',
+          email: 'manager_config_test_@localhost.com',
+          firstName: 'Manager',
+          lastName: 'Local',
+          displayName: 'Manager Local',
+          roles: ['user', 'manager'],
+          workingHoursPerDay: 7
+        };
 
         userFromSeedConfig = config.seedDB.options.seedUser;
         adminFromSeedConfig = config.seedDB.options.seedAdmin;
+        managerFromSeedConfig = config.seedDB.options.seedManager;
 
         return done();
 
@@ -71,6 +81,12 @@ describe('Configuration Tests:', function () {
       (typeof adminFromSeedConfig).should.not.equal('undefined');
       should.exist(adminFromSeedConfig.username);
       should.exist(adminFromSeedConfig.email);
+    });
+    
+    it('should have seedDB configuration set for manager user', function() {
+      (typeof managerFromSeedConfig).should.not.equal('undefined');
+      should.exist(managerFromSeedConfig.username);
+      should.exist(managerFromSeedConfig.email);
     });
 
     it('should not be an admin user to begin with', function(done) {

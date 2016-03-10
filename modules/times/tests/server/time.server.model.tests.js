@@ -30,8 +30,9 @@ describe('Time Model Unit Tests:', function () {
 
     user.save(function () {
       time = new Time({
-        title: 'Time Title',
-        content: 'Time Content',
+        notes: 'This are notes',
+        date: Date.now(),
+        hours: 2.3,
         user: user
       });
 
@@ -48,8 +49,17 @@ describe('Time Model Unit Tests:', function () {
       });
     });
 
-    it('should be able to show an error when try to save without title', function (done) {
-      time.title = '';
+    it('should be able to show an error when try to save without hours', function (done) {
+      time.hours = undefined;
+
+      return time.save(function (err, a) {
+        should.exist(err);
+        done();
+      });
+    });
+
+    it('should be able to show an error when try to save with negative hours', function (done) {
+      time.hours = -2;
 
       return time.save(function (err) {
         should.exist(err);

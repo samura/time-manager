@@ -25,7 +25,11 @@ exports.update = function (req, res) {
   user.firstName = req.body.firstName;
   user.lastName = req.body.lastName;
   user.displayName = user.firstName + ' ' + user.lastName;
-  user.roles = req.body.roles;
+  
+  // only update roles if admin
+  if(req.user.roles.indexOf('admin') !== -1) {
+    user.roles = req.body.roles;
+  }
 
   user.save(function (err) {
     if (err) {

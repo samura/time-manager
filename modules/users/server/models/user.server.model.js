@@ -14,14 +14,14 @@ var mongoose = require('mongoose'),
  * A Validation function for local strategy properties
  */
 var validateLocalStrategyProperty = function (property) {
-  return ((this.provider !== 'local' && !this.updated) || property.length);
+  return property.length;
 };
 
 /**
  * A Validation function for local strategy email
  */
 var validateLocalStrategyEmail = function (email) {
-  return ((this.provider !== 'local' && !this.updated) || validator.isEmail(email, { require_tld: false }));
+  return validator.isEmail(email, { require_tld: false });
 };
 
 /**
@@ -70,19 +70,18 @@ var UserSchema = new Schema({
     type: String,
     default: 'modules/users/client/img/profile/default.png'
   },
-  provider: {
-    type: String,
-    required: 'Provider is required'
-  },
-  providerData: {},
-  additionalProvidersData: {},
   roles: {
     type: [{
       type: String,
-      enum: ['user', 'admin']
+      enum: ['user', 'admin', 'manager']
     }],
     default: ['user'],
     required: 'Please provide at least one role'
+  },
+  workingHoursPerDay: {
+    type: 'Number',
+    default: 0,
+    min: [0, 'The preferred number of working hours per day must be 0 or higher']
   },
   updated: {
     type: Date
@@ -116,7 +115,7 @@ UserSchema.pre('save', function (next) {
  * Hook a pre validate method to test the local password
  */
 UserSchema.pre('validate', function (next) {
-  if (this.provider === 'local' && this.password && this.isModified('password')) {
+  if (this.password && this.isModified('password')) {
     var result = owasp.test(this.password);
     if (result.errors.length) {
       var error = result.errors.join(' ');

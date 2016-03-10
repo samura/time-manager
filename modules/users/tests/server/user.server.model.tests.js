@@ -25,7 +25,7 @@ describe('User Model Unit Tests:', function () {
       email: 'test@test.com',
       username: 'username',
       password: 'M3@n.jsI$Aw3$0m3',
-      provider: 'local'
+      workingHoursPerDay: 3
     };
     // user2 is a clone of user1
     user2 = user1;
@@ -36,7 +36,7 @@ describe('User Model Unit Tests:', function () {
       email: 'test3@test.com',
       username: 'different_username',
       password: 'Different_Password1!',
-      provider: 'local'
+      workingHoursPerDay: 8
     };
   });
 
@@ -212,6 +212,20 @@ describe('User Model Unit Tests:', function () {
         should.not.exist(err);
         _user1.password.should.not.equal(passwordBeforeSave);
         _user1.remove(function(err) {
+          should.not.exist(err);
+          done();
+        });
+      });
+    });
+    
+    it('should not save if preferred working hours per day is less than 0', function (done) {
+      var _user1 = new User(user1);
+      _user1.workingHoursPerDay = -1;
+      
+      _user1.save(function (err) {
+        should.exist(err);
+        should.exist(err.errors.workingHoursPerDay);
+        _user1.remove(function (err) {
           should.not.exist(err);
           done();
         });

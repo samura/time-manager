@@ -22,22 +22,19 @@ exports.invokeRolesPolicies = function () {
       permissions: '*'
     }]
   }, {
-    roles: ['user'],
+    roles: ['manager'],
     allows: [{
       resources: '/api/times',
-      permissions: ['get', 'post']
+      permissions: '*'
     }, {
       resources: '/api/times/:timeId',
       permissions: ['get']
     }]
   }, {
-    roles: ['guest'],
+    roles: ['user'],
     allows: [{
       resources: '/api/times',
-      permissions: ['get']
-    }, {
-      resources: '/api/times/:timeId',
-      permissions: ['get']
+      permissions: '*'
     }]
   }]);
 };
@@ -48,8 +45,8 @@ exports.invokeRolesPolicies = function () {
 exports.isAllowed = function (req, res, next) {
   var roles = (req.user) ? req.user.roles : ['guest'];
 
-  // If an time is being processed and the current user created it then allow any manipulation
-  if (req.time && req.user && req.time.user && req.time.user.id === req.user.id) {
+  // If a time is being processed and the current user/admin created it then allow any manipulation
+  if (req.time && req.user && req.time.user && (req.time.user.id === req.user.id || req.user.roles.indexOf('admin') !== -1)) {
     return next();
   }
 
