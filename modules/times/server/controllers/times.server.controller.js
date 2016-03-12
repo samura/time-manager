@@ -6,6 +6,7 @@
 var path = require('path'),
   mongoose = require('mongoose'),
   Time = mongoose.model('Time'),
+  User = mongoose.model('User'),
   errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller'));
 
 /**
@@ -77,16 +78,10 @@ exports.delete = function (req, res) {
 /**
  * List of Times
  */
-exports.list = function (req, res) {
+exports.list = function (req, res) {  
   
-  var filter = {};
-  
-  // if not admin or manager, you can only get what is yours
-  if(req.user.roles.indexOf('admin') === -1 && req.user.roles.indexOf('manager') === -1) {
-    filter.user = mongoose.Types.ObjectId(req.user.id);
-  }
-  
-  Time.find(filter).sort('-created').populate('user', 'displayName').lean().exec(function (err, times) {
+  Time.paginate(req.filters, { page: req.page, sort: '-created', populate: ['user', 'displayName'] }, function (err, result) {
+    
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -94,16 +89,81 @@ exports.list = function (req, res) {
     }
       
     // adds a flag to know if a user can be edited/removed
-    times = times.map(function(time) {
+    result.docs = result.docs.map(function(time) {
       time.canChange = req.user.roles.indexOf('admin') !== -1 || req.user._id.equals(time.user._id);
       
       return time;
     });
     
-    res.json(times);
+    res.json(result);
   });
 };
 
+/**
+ * Export each date information
+ */
+exports.export = function(req, res) {
+  Time.aggregate([
+    { $match: req.filters },
+    { $group: {
+      _id: { date: { $dateToString: { format: '%d/%m/%Y', date: '$date' } }, user: '$user' },
+      time: { $sum: '$hours' },
+      notes: { $push: '$notes' } } }
+  ], function (err, times) {
+    
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    }
+    
+    // populate the results with the user's name
+    User.populate(times, { path: '_id.user', select: 'displayName' }, function(err, times) {
+    
+      if (err) {
+        return res.status(400).send({
+          message: errorHandler.getErrorMessage(err)
+        });
+      }
+      
+      res.json(times);
+    });
+  });
+};
+
+/**
+ * sets the query filters based on the request
+ */
+exports.filters = function(req, res, next) {
+  var filters = {};
+  
+  if(typeof req.query.date !== 'undefined') {
+    filters.date = {};
+    if(typeof req.query.date.before !== 'undefined') {
+      filters.date.$lte = (new Date(req.query.date.before)).toISOString();
+    }
+    if(typeof req.query.date.after !== 'undefined') {
+      filters.date.$gte = (new Date(req.query.date.after)).toISOString();
+    }
+  }
+  
+  // if not admin or manager, you can only get what is yours
+  if(req.user.roles.indexOf('admin') === -1 && req.user.roles.indexOf('manager') === -1) {
+    filters.user = mongoose.Types.ObjectId(req.user.id);
+  }
+  
+  req.filters = filters;
+  next();
+};
+
+/**
+ * Sets the default page number
+ */
+exports.page = function(req, res, next) {
+  req.page = typeof req.query.p !== 'undefined' ? req.query.p : 1;
+  next();
+};
+  
 /**
  * Time middleware
  */

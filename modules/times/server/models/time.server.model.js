@@ -4,6 +4,7 @@
  * Module dependencies
  */
 var mongoose = require('mongoose'),
+  mongoosePaginate = require('mongoose-paginate'),
   Schema = mongoose.Schema;
 
 /**
@@ -35,4 +36,5 @@ var TimeSchema = new Schema({
   
 });
 
+TimeSchema.plugin(mongoosePaginate);
 mongoose.model('Time', TimeSchema);

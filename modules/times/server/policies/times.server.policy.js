@@ -20,6 +20,9 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/times/:timeId',
       permissions: '*'
+    }, {
+      resources: '/api/times/export',
+      permissions: ['get']
     }]
   }, {
     roles: ['manager'],
@@ -29,12 +32,18 @@ exports.invokeRolesPolicies = function () {
     }, {
       resources: '/api/times/:timeId',
       permissions: ['get']
+    }, {
+      resources: '/api/times/export',
+      permissions: ['get']
     }]
   }, {
     roles: ['user'],
     allows: [{
       resources: '/api/times',
       permissions: '*'
+    }, {
+      resources: '/api/times/export',
+      permissions: ['get']
     }]
   }]);
 };

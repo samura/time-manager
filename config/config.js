@@ -204,6 +204,13 @@ var initGlobalConfig = function () {
     getGlobbedPaths: getGlobbedPaths,
     validateSessionSecret: validateSessionSecret
   };
+  
+  var mongoosePaginate = require('mongoose-paginate');
+
+  mongoosePaginate.paginate.options = { 
+    lean:  true,
+    limit: 20
+  };
 
   return config;
 };

@@ -2,6 +2,7 @@
 
 var should = require('should'),
   request = require('supertest'),
+  async = require('async'),
   path = require('path'),
   mongoose = require('mongoose'),
   User = mongoose.model('User'),
@@ -144,7 +145,7 @@ describe('Time CRUD tests', function () {
                   return done(timesGetErr);
                 }
                 // Get times list
-                var times = timesGetRes.body;
+                var times = timesGetRes.body.docs;
 
                 // Set assertions
                 (times[0].user._id).should.equal(userId);
@@ -324,7 +325,9 @@ describe('Time CRUD tests', function () {
           agent.get('/api/times')
             .end(function (req, res) {
               // Set assertion
-              res.body.should.be.instanceof(Array).and.have.lengthOf(1);
+              var times = res.body.docs;  
+            
+              times.should.be.instanceof(Array).and.have.lengthOf(1);
 
               // Call the assertion callback
               done();
@@ -518,7 +521,9 @@ describe('Time CRUD tests', function () {
           agent.get('/api/times')
             .end(function (req, res) {
               // Set assertion
-              res.body.should.be.instanceof(Array).and.have.lengthOf(2);
+              var times = res.body.docs;
+            
+              times.should.be.instanceof(Array).and.have.lengthOf(2);
 
               // Call the assertion callback
               done();
@@ -547,7 +552,9 @@ describe('Time CRUD tests', function () {
           agent.get('/api/times')
             .end(function (req, res) {
               // Set assertion
-              res.body.should.be.instanceof(Array).and.have.lengthOf(2);
+              var times = res.body.docs;
+            
+              times.should.be.instanceof(Array).and.have.lengthOf(2);
 
               // Call the assertion callback
               done();
@@ -759,7 +766,7 @@ describe('Time CRUD tests', function () {
         agent.get('/api/times')
           .end(function (req, res) {
             // Set assertion
-            var times = res.body;
+            var times = res.body.docs;
           
             var canChange = 0;
             times.forEach(function (time) {
@@ -792,7 +799,7 @@ describe('Time CRUD tests', function () {
         agent.get('/api/times')
           .end(function (req, res) {
             // Set assertion
-            var times = res.body;
+            var times = res.body.docs;
           
             var canChange = 0;
             times.forEach(function (time) {
@@ -825,7 +832,7 @@ describe('Time CRUD tests', function () {
         agent.get('/api/times')
           .end(function (req, res) {
             // Set assertion
-            var times = res.body;
+            var times = res.body.docs;
           
             var canChange = 0;
             times.forEach(function (time) {
@@ -840,6 +847,362 @@ describe('Time CRUD tests', function () {
             done();
           });
       });
+  });
+  
+  it('should be able to see 2 pages when more than 20 results', function (done) {
+    
+    // insert 30 records
+    var inserts = [];
+    var saveTime = function(callback) {
+      var t = new Time(time);
+      t.save(callback);
+    };
+    for(var i=0; i<30; i++) {
+      inserts.push(saveTime);
+    }
+
+    async.parallel(inserts, function (err) {
+      if (err) {
+        return done(err);
+      }
+      
+      agent.post('/api/auth/signin')
+        .send(credentials)
+        .expect(200)
+        .end(function (signinErr, signinRes) {
+          // Handle signin error
+          if (signinErr) {
+            return done(signinErr);
+          }
+          // Request the first page of times
+          agent.get('/api/times')
+            .expect(200)
+            .end(function (err, res) {
+              if (err) {
+                return done(err);
+              }
+              // Set assertion
+              var times = res.body.docs;
+
+              res.body.total.should.be.equal(30);
+              times.should.be.instanceof(Array).and.have.lengthOf(20);
+
+              // Request times
+              agent.get('/api/times?p=2')
+                .expect(200)
+                .end(function (err, res) {
+                  if (err) {
+                    return done(err);
+                  }
+                
+                  // Set assertion
+                  var times = res.body.docs;
+
+                  res.body.total.should.be.equal(30);
+                  times.should.be.instanceof(Array).and.have.lengthOf(10);
+
+                  // Call the assertion callback
+                  done();
+                });
+            });
+        });  
+    });
+    
+  });
+  
+  it('should be able to list times prior a date', function (done) {
+    
+    var t = new Time(time);
+    t.notes = 'past';
+    t.date = new Date(2016,1,1,6,0,0,0);
+    t.save(function (err) {
+      if (err) {
+        return done(err);
+      }
+      
+      var t2 = new Time(time);
+      t2.notes = 'future';
+      t2.date = new Date(2025,3,1,6,0,0,0);
+      t2.save(function (err) {
+        if (err) {
+          return done(err);
+        }
+        
+        agent.post('/api/auth/signin')
+          .send(credentials)
+          .expect(200)
+          .end(function (signinErr, signinRes) {
+            // Handle signin error
+            if (signinErr) {
+              return done(signinErr);
+            }
+          
+            // Request the first page of times
+            agent.get('/api/times?date[before]=' + (new Date(1457804582680 - 17280000)).toISOString())
+              .expect(200)
+              .end(function (err, res) {
+                if (err) {
+                  return done(err);
+                }
+
+                // Set assertion
+                var times = res.body.docs;
+
+                res.body.total.should.be.equal(1);
+                times.should.be.instanceof(Array).and.have.lengthOf(1);
+
+                done();
+              });
+          });  
+      });
+    });
+  });
+    
+  it('should be able to list times after a date', function (done) {
+    
+    var t = new Time(time);
+    t.notes = 'past';
+    t.date = new Date(2016,1,1,6,0,0,0);
+    t.save(function (err) {
+      if (err) {
+        return done(err);
+      }
+      
+      var t2 = new Time(time);
+      t2.notes = 'future';
+      t2.date = new Date(2025,3,1,6,0,0,0);
+      t2.save(function (err) {
+        if (err) {
+          return done(err);
+        }
+        
+        agent.post('/api/auth/signin')
+          .send(credentials)
+          .expect(200)
+          .end(function (signinErr, signinRes) {
+            // Handle signin error
+            if (signinErr) {
+              return done(signinErr);
+            }
+          
+            // Request the first page of times
+            agent.get('/api/times?date[after]=' + (new Date()).toISOString())
+              .expect(200)
+              .end(function (err, res) {
+                if (err) {
+                  return done(err);
+                }
+
+                // Set assertion
+                var times = res.body.docs;
+
+                res.body.total.should.be.equal(1);
+                times.should.be.instanceof(Array).and.have.lengthOf(1);
+
+                done();
+              });
+          });  
+      });
+    });
+  });
+      
+  it('should be able to list times between a date', function (done) {
+    
+    var t = new Time(time);
+    t.notes = 'past';
+    t.date = new Date(2016,1,1,6,0,0,0);
+    t.save(function (err) {
+      if (err) {
+        return done(err);
+      }
+      
+      var t2 = new Time(time);
+      t2.notes = 'future';
+      t2.date = new Date(2025,3,1,6,0,0,0);
+      t2.save(function (err) {
+        if (err) {
+          return done(err);
+        }
+        
+        var t3 = new Time(time);
+        t3.notes = 'now';
+        t3.save(function (err) {
+          if (err) {
+            return done(err);
+          }
+
+          agent.post('/api/auth/signin')
+            .send(credentials)
+            .expect(200)
+            .end(function (signinErr, signinRes) {
+              // Handle signin error
+              if (signinErr) {
+                return done(signinErr);
+              }
+
+              // Request the first page of times
+              agent.get('/api/times?date[before]=' + (new Date(1457804582680 + 1728000000)).toISOString() + '&date[after]=' + (new Date(1457804582680 - 1728000000)).toISOString())
+                .expect(200)
+                .end(function (err, res) {
+                  if (err) {
+                    return done(err);
+                  }
+
+                  // Set assertion
+                  var times = res.body.docs;
+
+                  res.body.total.should.be.equal(1);
+                  times.should.be.instanceof(Array).and.have.lengthOf(1);
+
+                  done();
+                });
+            });
+        });
+      });
+    });
+  });
+    
+  it('should be able to export the results by date if admin or manager', function (done) {
+
+    var t = new Time(time);
+    t.notes = 'note1';
+    t.date = new Date(2016,1,1,6,0,0,0);
+    t.save(function (err) {
+      if (err) {
+        return done(err);
+      }
+
+      var t2 = new Time(time);
+      t2.notes = 'note2';
+      t2.date = new Date(2016,1,1,2,0,0,0);
+      t2.hours = 3.5;
+      t2.save(function (err) {
+        if (err) {
+          return done(err);
+        }
+
+        var t3 = new Time(time);
+        t3.notes = 'now';
+        t3.date = new Date(2016,1,1,5,0,0,0);
+        t3.hours = 1.5;
+        t3.save(function (err) {
+          if (err) {
+            return done(err);
+          }
+
+          agent.post('/api/auth/signin')
+            .send(credentialsAdmin)
+            .expect(200)
+            .end(function (signinErr, signinRes) {
+              // Handle signin error
+              if (signinErr) {
+                return done(signinErr);
+              }
+
+              // Request the first page of times
+              agent.get('/api/times/export')
+                .expect(200)
+                .end(function (err, res) {
+                  if (err) {
+                    return done(err);
+                  }
+
+                  // Set assertion
+                  var dates = res.body;
+
+                  dates.should.be.instanceof(Array).and.have.lengthOf(2);
+                  dates[0].notes.should.be.instanceof(Array).and.have.lengthOf(3);
+
+                  agent.post('/api/auth/signin')
+                    .send(credentialsManager)
+                    .expect(200)
+                    .end(function (signinErr, signinRes) {
+                      // Handle signin error
+                      if (signinErr) {
+                        return done(signinErr);
+                      }
+
+                      // Request the first page of times
+                      agent.get('/api/times/export')
+                        .expect(200)
+                        .end(function (err, res) {
+                          if (err) {
+                            return done(err);
+                          }
+
+                          // Set assertion
+                          var dates = res.body;
+
+                          dates.should.be.instanceof(Array).and.have.lengthOf(2);
+                          dates[0].notes.should.be.instanceof(Array).and.have.lengthOf(3);
+
+                          done();
+                        });
+                    });
+                });
+            });
+        });
+      });
+    });
+    
+    it('should be able to export the results by date only with "user" information', function (done) {
+
+      var t = new Time(time);
+      t.notes = 'note1';
+      t.date = new Date(2016,1,1,6,0,0,0);
+      t.save(function (err) {
+        if (err) {
+          return done(err);
+        }
+
+        var t2 = new Time(time);
+        t2.notes = 'note2';
+        t2.date = new Date(2016,1,1,2,0,0,0);
+        t2.hours = 3.5;
+        t2.save(function (err) {
+          if (err) {
+            return done(err);
+          }
+
+          var t3 = new Time(time);
+          t3.notes = 'now';
+          t3.date = new Date(2016,1,1,5,0,0,0);
+          t3.hours = 1.5;
+          t3.save(function (err) {
+            if (err) {
+              return done(err);
+            }
+
+            agent.post('/api/auth/signin')
+              .send(credentials)
+              .expect(200)
+              .end(function (signinErr, signinRes) {
+                // Handle signin error
+                if (signinErr) {
+                  return done(signinErr);
+                }
+
+                // Request the first page of times
+                agent.get('/api/times/export')
+                  .expect(200)
+                  .end(function (err, res) {
+                    if (err) {
+                      return done(err);
+                    }
+
+                    // Set assertion
+                    var dates = res.body;
+
+                    dates.should.be.instanceof(Array).and.have.lengthOf(1);
+                    dates[0].notes.should.be.instanceof(Array).and.have.lengthOf(3);
+
+                    done();
+                  });
+              });
+          });
+        });
+      });
+    });
   });
   
   afterEach(function (done) {
