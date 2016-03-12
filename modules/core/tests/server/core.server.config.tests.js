@@ -7,6 +7,7 @@ var _ = require('lodash'),
   should = require('should'),
   mongoose = require('mongoose'),
   User = mongoose.model('User'),
+  Time = mongoose.model('Time'),
   path = require('path'),
   fs = require('fs'),
   mock = require('mock-fs'),
@@ -140,7 +141,7 @@ describe('Configuration Tests:', function () {
       });
     });
 
-    it('should seed admin, and "regular" user accounts when NODE_ENV is set to "test"', function(done) {
+    it('should seed admin, manager and "regular" user accounts when NODE_ENV is set to "test"', function(done) {
 
       // Save original value
       var nodeEnv = process.env.NODE_ENV;
@@ -157,6 +158,7 @@ describe('Configuration Tests:', function () {
           .start({ logResults: false })
           .then(function() {
             User.find({ username: adminFromSeedConfig.username }, function(err, users) {
+              
               should.not.exist(err);
               users.should.be.instanceof(Array).and.have.lengthOf(1);
 
@@ -171,12 +173,21 @@ describe('Configuration Tests:', function () {
                 var _user = users.pop();
                 _user.username.should.equal(userFromSeedConfig.username);
 
-                // Restore original NODE_ENV environment variable
-                process.env.NODE_ENV = nodeEnv;
+                User.find({ username: managerFromSeedConfig.username }, function(err, users) {
 
-                User.remove(function(err) {
                   should.not.exist(err);
-                  return done();
+                  users.should.be.instanceof(Array).and.have.lengthOf(1);
+
+                  var _manager = users.pop();
+                  _manager.username.should.equal(managerFromSeedConfig.username);
+
+                  // Restore original NODE_ENV environment variable
+                  process.env.NODE_ENV = nodeEnv;
+
+                  User.remove(function(err) {
+                    should.not.exist(err);
+                    return done();
+                  });
                 });
               });
             });
@@ -184,7 +195,7 @@ describe('Configuration Tests:', function () {
       });
     });
 
-    it('should seed admin, and "regular" user accounts when NODE_ENV is set to "test" when they already exist', function (done) {
+    it('should seed admin, manager and "regular" user and accounts when NODE_ENV is set to "test" when they already exist', function (done) {
 
       // Save original value
       var nodeEnv = process.env.NODE_ENV;
@@ -193,6 +204,7 @@ describe('Configuration Tests:', function () {
 
       var _user = new User(userFromSeedConfig);
       var _admin = new User(adminFromSeedConfig);
+      var _manager = new User(managerFromSeedConfig);
 
       _admin.save(function (err) {
         // There shouldn't be any errors
@@ -200,29 +212,33 @@ describe('Configuration Tests:', function () {
         _user.save(function (err) {
           // There shouldn't be any errors
           should.not.exist(err);
-
-          User.find({ username: { $in: [adminFromSeedConfig.username, userFromSeedConfig.username] } }, function (err, users) {
-
+          _manager.save(function (err) {
             // There shouldn't be any errors
             should.not.exist(err);
-            users.should.be.instanceof(Array).and.have.lengthOf(2);
 
-            seed
-              .start({ logResults: false })
-              .then(function () {
-                User.find({ username: { $in: [adminFromSeedConfig.username, userFromSeedConfig.username] } }, function (err, users) {
-                  should.not.exist(err);
-                  users.should.be.instanceof(Array).and.have.lengthOf(2);
+            User.find({ username: { $in: [adminFromSeedConfig.username, userFromSeedConfig.username, managerFromSeedConfig.username] } }, function (err, users) {
 
-                  // Restore original NODE_ENV environment variable
-                  process.env.NODE_ENV = nodeEnv;
+              // There shouldn't be any errors
+              should.not.exist(err);
+              users.should.be.instanceof(Array).and.have.lengthOf(3);
 
-                  User.remove(function (err) {
+              seed
+                .start({ logResults: false })
+                .then(function () {
+                  User.find({ username: { $in: [adminFromSeedConfig.username, userFromSeedConfig.username, managerFromSeedConfig.username] } }, function (err, users) {
                     should.not.exist(err);
-                    return done();
+                    users.should.be.instanceof(Array).and.have.lengthOf(3);
+
+                    // Restore original NODE_ENV environment variable
+                    process.env.NODE_ENV = nodeEnv;
+
+                    User.remove(function (err) {
+                      should.not.exist(err);
+                      return done();
+                    });
                   });
                 });
-              });
+            });
           });
         });
       });
@@ -263,7 +279,7 @@ describe('Configuration Tests:', function () {
       });
     });
 
-    it('should seed admin, and "regular" user accounts when NODE_ENV is set to "test" with custom options', function(done) {
+    it('should seed admin, manager and "regular" user accounts when NODE_ENV is set to "test" with custom options', function(done) {
 
       // Save original value
       var nodeEnv = process.env.NODE_ENV;
@@ -277,7 +293,7 @@ describe('Configuration Tests:', function () {
         users.should.be.instanceof(Array).and.have.lengthOf(0);
 
         seed
-          .start({ logResults: false, seedAdmin: admin1, seedUser: user1 })
+          .start({ logResults: false, seedAdmin: admin1, seedUser: user1, seedManager: manager1 })
           .then(function() {
             User.find({ username: admin1.username }, function(err, users) {
               should.not.exist(err);
@@ -293,13 +309,23 @@ describe('Configuration Tests:', function () {
 
                 var _user = users.pop();
                 _user.username.should.equal(user1.username);
+                
+                User.find({ username: manager1.username }, function(err, users) {
 
-                // Restore original NODE_ENV environment variable
-                process.env.NODE_ENV = nodeEnv;
-
-                User.remove(function(err) {
                   should.not.exist(err);
-                  return done();
+                  users.should.be.instanceof(Array).and.have.lengthOf(1);
+
+                  var _manager = users.pop();
+                  _manager.username.should.equal(manager1.username);
+
+
+                  // Restore original NODE_ENV environment variable
+                  process.env.NODE_ENV = nodeEnv;
+
+                  User.remove(function(err) {
+                    should.not.exist(err);
+                    return done();
+                  });
                 });
               });
             });
@@ -387,6 +413,48 @@ describe('Configuration Tests:', function () {
             return done();
           });
         });
+    });
+    
+    it('should have the right number of time entries after seeding', function(done) {
+
+      // Save original value
+      var nodeEnv = process.env.NODE_ENV;
+      // Set node env ro production environment
+      process.env.NODE_ENV = 'test';
+
+      // get the time started
+      Time.remove({}, function(err) {
+
+        // There shouldn't be any errors
+        should.not.exist(err);
+
+        seed
+          .start({ logResults: false })
+          .then(function() {
+            Time.find({}, function(err, times) {
+              should.not.exist(err);
+              times.should.be.instanceof(Array).and.have.lengthOf(6);
+              
+              // removing a user should remove its time
+              User.findOne({ username: 'user' }, function(err, userObj) {
+                should.not.exist(err);
+              
+                userObj.remove(function(err, obj) {
+                  should.not.exist(err);
+                  Time.find({}, function(err, times) {
+                    times.should.be.instanceof(Array).and.have.lengthOf(2);
+                    process.env.NODE_ENV = nodeEnv;
+
+                    User.remove(function(err) {
+                      should.not.exist(err);
+                      return done();
+                    });
+                  });
+                });
+              });
+            });
+          });
+      });
     });
   });
 

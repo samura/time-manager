@@ -11,9 +11,23 @@
     return $resource('api/times/:timeId', {
       timeId: '@_id'
     }, {
+      get: {
+        method: 'GET',
+        transformResponse: transformDate
+      },
       update: {
-        method: 'PUT'
+        method: 'PUT',
+        transformResponse: transformDate
       }
     });
+  }
+
+  function transformDate(response) {
+    // convert the data object
+    var data = JSON.parse(response);
+    console.log(data);
+    data.date = new Date(data.date);
+
+    return data;
   }
 })();

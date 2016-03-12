@@ -86,14 +86,21 @@ exports.list = function (req, res) {
     filter.user = mongoose.Types.ObjectId(req.user.id);
   }
   
-  Time.find(filter).sort('-created').populate('user', 'displayName').exec(function (err, times) {
+  Time.find(filter).sort('-created').populate('user', 'displayName').lean().exec(function (err, times) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
       });
-    } else {
-      res.json(times);
     }
+      
+    // adds a flag to know if a user can be edited/removed
+    times = times.map(function(time) {
+      time.canChange = req.user.roles.indexOf('admin') !== -1 || req.user._id.equals(time.user._id);
+      
+      return time;
+    });
+    
+    res.json(times);
   });
 };
 

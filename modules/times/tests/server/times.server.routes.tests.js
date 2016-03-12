@@ -91,7 +91,7 @@ describe('Time CRUD tests', function () {
       date: Date.now(),
       hours: 4.1,
     });
-
+    
     // Save a user to the test db and create new time
     user.save(function () {
       manager.save(function () {
@@ -740,6 +740,105 @@ describe('Time CRUD tests', function () {
               done();
             });
         });
+      });
+  });
+  
+  it('should be able to manipulate any time if admin', function (done) {
+    // this only tests the "canChange" flag, better validation are done on other tests
+    
+    agent.post('/api/auth/signin')
+      .send(credentialsAdmin)
+      .expect(200)
+      .end(function (signinErr, signinRes) {
+        // Handle signin error
+        if (signinErr) {
+          return done(signinErr);
+        }
+
+        // Request times
+        agent.get('/api/times')
+          .end(function (req, res) {
+            // Set assertion
+            var times = res.body;
+          
+            var canChange = 0;
+            times.forEach(function (time) {
+              if(time.canChange) {
+                canChange++;
+              }
+            });
+          
+            canChange.should.be.equal(1);
+
+            // Call the assertion callback
+            done();
+          });
+      });
+  });
+  
+  it('should be able to manipulate own times if user', function (done) {
+    // this only tests the "canChange" flag, better validation are done on other tests
+    
+    agent.post('/api/auth/signin')
+      .send(credentials)
+      .expect(200)
+      .end(function (signinErr, signinRes) {
+        // Handle signin error
+        if (signinErr) {
+          return done(signinErr);
+        }
+
+        // Request times
+        agent.get('/api/times')
+          .end(function (req, res) {
+            // Set assertion
+            var times = res.body;
+          
+            var canChange = 0;
+            times.forEach(function (time) {
+              if(time.canChange) {
+                canChange++;
+              }
+            });
+          
+            canChange.should.be.equal(0);
+
+            // Call the assertion callback
+            done();
+          });
+      });
+  });
+  
+  it('should be able to manipulate own times if manager', function (done) {
+    // this only tests the "canChange" flag, better validation are done on other tests
+    
+    agent.post('/api/auth/signin')
+      .send(credentialsManager)
+      .expect(200)
+      .end(function (signinErr, signinRes) {
+        // Handle signin error
+        if (signinErr) {
+          return done(signinErr);
+        }
+
+        // Request times
+        agent.get('/api/times')
+          .end(function (req, res) {
+            // Set assertion
+            var times = res.body;
+          
+            var canChange = 0;
+            times.forEach(function (time) {
+              if(time.canChange) {
+                canChange++;
+              }
+            });
+          
+            canChange.should.be.equal(1);
+
+            // Call the assertion callback
+            done();
+          });
       });
   });
   

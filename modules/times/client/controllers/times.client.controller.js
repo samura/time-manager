@@ -31,7 +31,6 @@
         return false;
       }
 
-      // TODO: move create/update logic to service
       if (vm.time._id) {
         vm.time.$update(successCallback, errorCallback);
       } else {
@@ -39,9 +38,7 @@
       }
 
       function successCallback(res) {
-        $state.go('times.view', {
-          timeId: res._id
-        });
+        $state.go('times.list');
       }
 
       function errorCallback(res) {

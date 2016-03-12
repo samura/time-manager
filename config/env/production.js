@@ -46,37 +46,5 @@ module.exports = {
         pass: process.env.MAILER_PASSWORD || 'MAILER_PASSWORD'
       }
     }
-  },
-  seedDB: {
-    seed: process.env.MONGO_SEED === 'true' ? true : false,
-    options: {
-      logResults: process.env.MONGO_SEED_LOG_RESULTS === 'false' ? false : true,
-      seedUser: {
-        username: process.env.MONGO_SEED_USER_USERNAME || 'user',
-        email: process.env.MONGO_SEED_USER_EMAIL || 'user@localhost.com',
-        firstName: 'User',
-        lastName: 'Local',
-        displayName: 'User Local',
-        roles: ['user'],
-        workingHoursPerDay: 5
-      },
-      seedAdmin: {
-        username: process.env.MONGO_SEED_ADMIN_USERNAME || 'admin',
-        email: process.env.MONGO_SEED_ADMIN_EMAIL || 'admin@localhost.com',
-        firstName: 'Admin',
-        lastName: 'Local',
-        displayName: 'Admin Local',
-        roles: ['user', 'admin']
-      },
-      seedManager: {
-        username: process.env.MONGO_SEED_ADMIN_USERNAME || 'manager',
-        email: process.env.MONGO_SEED_ADMIN_EMAIL || 'manager@localhost.com',
-        firstName: 'Manager',
-        lastName: 'Local',
-        displayName: 'Manager Local',
-        roles: ['user', 'manager'],
-        workingHoursPerDay: 2
-      }
-    }
   }
 };

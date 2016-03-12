@@ -24,6 +24,11 @@
       title: 'Edit Profile',
       state: 'settings.profile'
     });
+    
+    Menus.addSubMenuItem('account', 'settings', {
+      title: 'Edit Configuration',
+      state: 'settings.configuration'
+    });
 
     Menus.addSubMenuItem('account', 'settings', {
       title: 'Edit Profile Picture',
@@ -34,12 +39,6 @@
       title: 'Change Password',
       state: 'settings.password'
     });
-
-    Menus.addSubMenuItem('account', 'settings', {
-      title: 'Manage Social Accounts',
-      state: 'settings.accounts'
-    });
-
   }
 
 })();

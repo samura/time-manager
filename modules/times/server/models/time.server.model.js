@@ -32,6 +32,7 @@ var TimeSchema = new Schema({
     type: Schema.ObjectId,
     ref: 'User'
   }
+  
 });
 
 mongoose.model('Time', TimeSchema);

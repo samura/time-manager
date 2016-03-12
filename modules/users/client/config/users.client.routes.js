@@ -20,18 +20,18 @@ angular.module('users').config(['$stateProvider',
           pageTitle: 'Settings'
         }
       })
+      .state('settings.configuration', {
+        url: '/configuration',
+        templateUrl: 'modules/users/client/views/settings/configuration.client.view.html',
+        data: {
+          pageTitle: 'Settings'
+        }
+      })
       .state('settings.password', {
         url: '/password',
         templateUrl: 'modules/users/client/views/settings/change-password.client.view.html',
         data: {
           pageTitle: 'Settings password'
-        }
-      })
-      .state('settings.accounts', {
-        url: '/accounts',
-        templateUrl: 'modules/users/client/views/settings/manage-social-accounts.client.view.html',
-        data: {
-          pageTitle: 'Settings accounts'
         }
       })
       .state('settings.picture', {
@@ -42,7 +42,6 @@ angular.module('users').config(['$stateProvider',
         }
       })
       .state('authentication', {
-        abstract: true,
         url: '/authentication',
         templateUrl: 'modules/users/client/views/authentication/authentication.client.view.html'
       })

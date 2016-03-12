@@ -12,11 +12,23 @@ var seedOptions = {};
 function removeUser (user) {
   return new Promise(function (resolve, reject) {
     var User = mongoose.model('User');
-    User.find({ username: user.username }).remove(function (err) {
+    var Time = mongoose.model('Time');
+    
+    User.findOne({ username: user.username }, function(err, user) {
       if (err) {
-        reject(new Error('Failed to remove local ' + user.username));
+        reject(new Error('Failed to remove ' + user.username));
       }
-      resolve();
+      
+      if(!user) {
+        return resolve();
+      }
+      user.remove(function (err) {
+        if (err) {
+          reject(new Error('Failed to remove ' + user.username));
+        }
+        
+        resolve();  
+      });
     });
   });
 }
@@ -98,6 +110,36 @@ function seedTheUser (user) {
   };
 }
 
+// save the specified time
+function seedTheTime (user, data) {
+  return function () {
+
+    var Time = mongoose.model('Time');
+    var promises = [];
+
+    if(typeof data === 'undefined') {
+      return;
+    }
+    
+    data.forEach(function(time) {
+      promises.push(new Promise(function(resolve, reject) {
+        var timeObj = new Time(time);
+        timeObj.user = user;
+
+        timeObj.save(function (err, thetime) {
+          if (err) {
+            reject(new Error('Failed to add time ' + timeObj.notes));
+          } else {
+            resolve(thetime);
+          }
+        });
+      }));
+    });
+
+    return Promise.all(promises);
+  };
+}
+
 // report the error
 function reportError (reject) {
   return function (err) {
@@ -127,12 +169,17 @@ module.exports.start = function start(options) {
   if (_.has(options, 'seedAdmin')) {
     seedOptions.seedAdmin = options.seedAdmin;
   }
+  
+  if (_.has(options, 'seedManager')) {
+    seedOptions.seedManager = options.seedManager;
+  }
 
   var User = mongoose.model('User');
   return new Promise(function (resolve, reject) {
 
     var adminAccount = new User(seedOptions.seedAdmin);
     var userAccount = new User(seedOptions.seedUser);
+    var managerAccount = new User(seedOptions.seedManager);
 
     //If production only seed admin if it does not exist
     if (process.env.NODE_ENV === 'production') {
@@ -143,12 +190,17 @@ module.exports.start = function start(options) {
         })
         .catch(reportError(reject));
     } else {
-      // Add both Admin and User account
+      // Add both Admin, manager and User account
 
       User.generateRandomPassphrase()
         .then(seedTheUser(userAccount))
+        .then(seedTheTime(userAccount, seedOptions.seedUser.seedTime))
         .then(User.generateRandomPassphrase)
         .then(seedTheUser(adminAccount))
+        .then(seedTheTime(adminAccount, seedOptions.seedAdmin.seedTime))
+        .then(User.generateRandomPassphrase)
+        .then(seedTheUser(managerAccount))
+        .then(seedTheTime(managerAccount, seedOptions.seedManager.seedTime))
         .then(function () {
           resolve();
         })

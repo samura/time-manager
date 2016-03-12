@@ -48,18 +48,6 @@
           roles: ['user', 'admin'],
           pageTitle: 'Edit Time {{ timeResolve.title }}'
         }
-      })
-      .state('times.view', {
-        url: '/:timeId',
-        templateUrl: 'modules/times/client/views/view-time.client.view.html',
-        controller: 'TimesController',
-        controllerAs: 'vm',
-        resolve: {
-          timeResolve: getTime
-        },
-        data:{
-          pageTitle: 'Time {{ timeResolve.title }}'
-        }
       });
   }
 

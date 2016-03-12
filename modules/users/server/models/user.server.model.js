@@ -127,6 +127,14 @@ UserSchema.pre('validate', function (next) {
 });
 
 /**
+ * Hook a pre remove method to delete any remaining relation
+ */
+UserSchema.pre('remove', function (next) {
+  var Time = mongoose.model('Time');
+  Time.remove({ user: this.id }, next);
+});
+
+/**
  * Create instance method for hashing a password
  */
 UserSchema.methods.hashPassword = function (password) {

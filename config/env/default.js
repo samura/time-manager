@@ -50,5 +50,48 @@ module.exports = {
         fileSize: 1*1024*1024 // Max file size in bytes (1 MB)
       }
     }
+  },
+  seedDB: {
+    seed: process.env.MONGO_SEED === 'true' ? true : false,
+    options: {
+      logResults: process.env.MONGO_SEED_LOG_RESULTS === 'false' ? false : true,
+      seedUser: {
+        username: process.env.MONGO_SEED_USER_USERNAME || 'user',
+        email: process.env.MONGO_SEED_USER_EMAIL || 'user@localhost.com',
+        firstName: 'User',
+        lastName: 'Local',
+        displayName: 'User Local',
+        roles: ['user'],
+        workingHoursPerDay: 5,
+        seedTime: [
+          { notes: 'note1', date: new Date(1457550315897), hours: 1.2 },
+          { notes: 'note2', date: new Date(1457550315897), hours: 2.2 },
+          { notes: 'note3', date: new Date(1457550315897), hours: 3.2 },
+          { notes: 'note4', date: new Date(1457550215897), hours: 4.2 },
+        ]
+      },
+      seedAdmin: {
+        username: process.env.MONGO_SEED_ADMIN_USERNAME || 'admin',
+        email: process.env.MONGO_SEED_ADMIN_EMAIL || 'admin@localhost.com',
+        firstName: 'Admin',
+        lastName: 'Local',
+        displayName: 'Admin Local',
+        roles: ['user', 'admin'],
+        workingHoursPerDay: 3
+      },
+      seedManager: {
+        username: process.env.MONGO_SEED_ADMIN_USERNAME || 'manager',
+        email: process.env.MONGO_SEED_ADMIN_EMAIL || 'manager@localhost.com',
+        firstName: 'Manager',
+        lastName: 'Local',
+        displayName: 'Manager Local',
+        roles: ['user', 'manager'],
+        workingHoursPerDay: 2,
+        seedTime: [
+          { notes: 'note1', date: new Date(1457550315897), hours: 1.2 },
+          { notes: 'note2', date: new Date(1457550315897), hours: 2.2 },
+        ]
+      }
+    }
   }
 };
