@@ -80,7 +80,7 @@ exports.delete = function (req, res) {
  */
 exports.list = function (req, res) {  
   
-  Time.paginate(req.filters, { page: req.page, sort: '-created', populate: ['user', 'displayName'] }, function (err, result) {
+  Time.paginate(req.filters, { page: req.page, sort: '-date', populate: [{path: 'user', select: 'displayName workingHoursPerDay'}] }, function (err, result) {
     
     if (err) {
       return res.status(400).send({
@@ -88,14 +88,65 @@ exports.list = function (req, res) {
       });
     }
       
-    // adds a flag to know if a user can be edited/removed
-    result.docs = result.docs.map(function(time) {
-      time.canChange = req.user.roles.indexOf('admin') !== -1 || req.user._id.equals(time.user._id);
+    if(!result.docs.length) {
+      return res.json(result);
+    }
       
-      return time;
+    // get the sums for each day, only for the results on .paginate()
+    // the high needs to be cloned to work if length == 1
+    var dateLow = result.docs[result.docs.length-1].date,
+      dateHigh = new Date(result.docs[0].date.getTime());
+
+    dateLow.setMilliseconds(0);
+    dateLow.setSeconds(0);
+    dateLow.setMinutes(0);
+    dateLow.setHours(0);
+
+    dateHigh.setMilliseconds(99);
+    dateHigh.setSeconds(59);
+    dateHigh.setMinutes(59);
+    dateHigh.setHours(23);
+
+    req.filters.date = {
+      $gte: dateLow,
+      $lte: dateHigh
+    };
+
+    // adds the sums for each day for each selected user
+    Time.aggregate([
+      { $match: req.filters },
+      { $group: {
+        _id: { date: { $dateToString: { format: '%d/%m/%Y', date: '$date' } }, user: '$user' },
+        time: { $sum: '$hours' },
+      } }
+    ], function (err, timeSums) {
+
+      if (err) {
+        return res.status(400).send({
+          message: errorHandler.getErrorMessage(err)
+        });
+      }
+
+      var dayTotals = {};
+      timeSums.forEach(function (timeSum) {
+        if(typeof dayTotals[timeSum._id.user] === 'undefined') {
+          dayTotals[timeSum._id.user] = {};
+        }
+
+        dayTotals[timeSum._id.user][timeSum._id.date] = timeSum.time;
+
+      });
+      result.dayTotals = dayTotals;
+      
+      // adds a flag to know if a user can be edited/removed
+      result.docs = result.docs.map(function(time) {
+        time.canChange = req.user.roles.indexOf('admin') !== -1 || req.user._id.equals(time.user._id);
+
+        return time;
+      });
+      
+      res.json(result);
     });
-    
-    res.json(result);
   });
 };
 
@@ -107,7 +158,7 @@ exports.export = function(req, res) {
     { $match: req.filters },
     { $group: {
       _id: { date: { $dateToString: { format: '%d/%m/%Y', date: '$date' } }, user: '$user' },
-      time: { $sum: '$hours' },
+      hours: { $sum: '$hours' },
       notes: { $push: '$notes' } } }
   ], function (err, times) {
     
@@ -126,6 +177,13 @@ exports.export = function(req, res) {
         });
       }
       
+      // move properties outside the _id
+      times.forEach(function (time) {
+        time.date = time._id.date;
+        time.user = time._id.user;
+        delete time._id;
+      });
+      
       res.json(times);
     });
   });
@@ -137,13 +195,28 @@ exports.export = function(req, res) {
 exports.filters = function(req, res, next) {
   var filters = {};
   
-  if(typeof req.query.date !== 'undefined') {
-    filters.date = {};
-    if(typeof req.query.date.before !== 'undefined') {
-      filters.date.$lte = (new Date(req.query.date.before)).toISOString();
-    }
-    if(typeof req.query.date.after !== 'undefined') {
-      filters.date.$gte = (new Date(req.query.date.after)).toISOString();
+  if(typeof req.query.filters !== 'undefined') {
+    var reqFilters = JSON.parse(req.query.filters);
+    
+    // makes sures that at least one of the filters is not undefined
+    // this way we dont create an emptu date: {} which returns no result
+    if(typeof reqFilters.date !== 'undefined' && (typeof reqFilters.date.from !== 'undefined' || typeof reqFilters.date.to !== 'undefined')) {
+      filters.date = {};
+
+      if(typeof reqFilters.date.from !== 'undefined') {
+        filters.date.$gte = new Date(reqFilters.date.from);
+        filters.date.$gte.setMilliseconds(0);
+        filters.date.$gte.setSeconds(0);
+        filters.date.$gte.setMinutes(0);
+        filters.date.$gte.setHours(0);
+      }
+      if(typeof reqFilters.date.to !== 'undefined') {
+        filters.date.$lte = new Date(reqFilters.date.to);
+        filters.date.$lte.setMilliseconds(99);
+        filters.date.$lte.setSeconds(59);
+        filters.date.$lte.setMinutes(59);
+        filters.date.$lte.setHours(23);
+      }
     }
   }
   

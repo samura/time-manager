@@ -938,7 +938,7 @@ describe('Time CRUD tests', function () {
             }
           
             // Request the first page of times
-            agent.get('/api/times?date[before]=' + (new Date(1457804582680 - 17280000)).toISOString())
+            agent.get('/api/times?date[to]=' + (new Date(1457804582680 - 17280000)).toISOString())
               .expect(200)
               .end(function (err, res) {
                 if (err) {
@@ -986,7 +986,7 @@ describe('Time CRUD tests', function () {
             }
           
             // Request the first page of times
-            agent.get('/api/times?date[after]=' + (new Date()).toISOString())
+            agent.get('/api/times?date[from]=' + (new Date()).toISOString())
               .expect(200)
               .end(function (err, res) {
                 if (err) {
@@ -1041,7 +1041,7 @@ describe('Time CRUD tests', function () {
               }
 
               // Request the first page of times
-              agent.get('/api/times?date[before]=' + (new Date(1457804582680 + 1728000000)).toISOString() + '&date[after]=' + (new Date(1457804582680 - 1728000000)).toISOString())
+              agent.get('/api/times?date[to]=' + (new Date(1457804582680 + 1728000000)).toISOString() + '&date[from]=' + (new Date(1457804582680 - 1728000000)).toISOString())
                 .expect(200)
                 .end(function (err, res) {
                   if (err) {
@@ -1201,6 +1201,97 @@ describe('Time CRUD tests', function () {
               });
           });
         });
+      });
+    });
+  });
+  
+  it('should be able to get the sums of each user if admin', function (done) {
+    // Create new time model instance
+    var timeObj = new Time(time);
+
+    // Save the time
+    timeObj.save(function () {
+      var timeObj2 = new Time(time);
+      
+      // Save the time
+      timeObj2.save(function () {
+      
+        agent.post('/api/auth/signin')
+          .send(credentialsAdmin)
+          .expect(200)
+          .end(function (signinErr, signinRes) {
+            // Handle signin error
+            if (signinErr) {
+              return done(signinErr);
+            }
+
+            // Request times
+            agent.get('/api/times')
+              .end(function (req, res) {
+                // Set assertion
+                var times = res.body.docs;
+                var dayTotals = res.body.dayTotals;
+
+                times.should.be.instanceof(Array).and.have.lengthOf(3);
+                Object.keys(dayTotals).should.be.instanceof(Array).and.have.lengthOf(2);
+
+                var dateObj = new Date();
+                var date = ('0' + dateObj.getDate()).slice(-2) + '/' +
+                  ('0' + (dateObj.getMonth()+1)).slice(-2) + '/' +
+                  dateObj.getFullYear();
+
+                dayTotals[user._id][date].should.be.equal(4.6);
+                dayTotals[manager._id][date].should.be.equal(4.1);
+
+                // Call the assertion callback
+                done();
+              });
+          });
+      });
+    });
+  });
+    
+  it('should be able to get the sums of itself if not admin or manager', function (done) {
+    // Create new time model instance
+    var timeObj = new Time(time);
+
+    // Save the time
+    timeObj.save(function () {
+      var timeObj2 = new Time(time);
+      
+      // Save the time
+      timeObj2.save(function () {
+      
+        agent.post('/api/auth/signin')
+          .send(credentials)
+          .expect(200)
+          .end(function (signinErr, signinRes) {
+            // Handle signin error
+            if (signinErr) {
+              return done(signinErr);
+            }
+
+            // Request times
+            agent.get('/api/times')
+              .end(function (req, res) {
+                // Set assertion
+                var times = res.body.docs;
+                var dayTotals = res.body.dayTotals;
+
+                times.should.be.instanceof(Array).and.have.lengthOf(2);
+                Object.keys(dayTotals).should.be.instanceof(Array).and.have.lengthOf(1);
+
+                var dateObj = new Date();
+                var date = ('0' + dateObj.getDate()).slice(-2) + '/' +
+                  ('0' + (dateObj.getMonth()+1)).slice(-2) + '/' +
+                  dateObj.getFullYear();
+
+                dayTotals[user._id][date].should.be.equal(4.6);
+
+                // Call the assertion callback
+                done();
+              });
+          });
       });
     });
   });

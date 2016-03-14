@@ -10,22 +10,8 @@
   function menuConfig(Menus) {
     Menus.addMenuItem('topbar', {
       title: 'Times',
-      state: 'times',
-      type: 'dropdown',
+      state: 'times.list',
       roles: ['*']
-    });
-
-    // Add the dropdown list item
-    Menus.addSubMenuItem('topbar', 'times', {
-      title: 'List Times',
-      state: 'times.list'
-    });
-
-    // Add the dropdown create item
-    Menus.addSubMenuItem('topbar', 'times', {
-      title: 'Create Time',
-      state: 'times.create',
-      roles: ['user']
     });
   }
 })();

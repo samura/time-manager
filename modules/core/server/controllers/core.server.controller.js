@@ -9,7 +9,6 @@ exports.renderIndex = function (req, res) {
 
   var safeUserObject = null;
   if (req.user) {
-    console.log(req.user);
     safeUserObject = {
       displayName: validator.escape(req.user.displayName),
       workingHoursPerDay: req.user.workingHoursPerDay,

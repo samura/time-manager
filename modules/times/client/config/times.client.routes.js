@@ -23,6 +23,15 @@
           pageTitle: 'Times List'
         }
       })
+      .state('times.export', {
+        url: '/export',
+        templateUrl: 'modules/times/client/views/export-times.client.view.html',
+        controller: 'TimesExportController',
+        controllerAs: 'vm',
+        data: {
+          pageTitle: 'Export Times'
+        }
+      })
       .state('times.create', {
         url: '/create',
         templateUrl: 'modules/times/client/views/form-time.client.view.html',
@@ -53,15 +62,15 @@
 
   getTime.$inject = ['$stateParams', 'TimesService'];
 
-  function getTime($stateParams, TimesService) {
-    return TimesService.get({
+  function getTime($stateParams, timesService) {
+    return timesService(null).get({
       timeId: $stateParams.timeId
     }).$promise;
   }
 
   newTime.$inject = ['TimesService'];
 
-  function newTime(TimesService) {
-    return new TimesService();
+  function newTime(timesService) {
+    return new (timesService(null))({date: new Date()});
   }
 })();

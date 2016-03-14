@@ -9,20 +9,12 @@
 
   function TimesController($scope, $state, time, Authentication) {
     var vm = this;
-
+    
     vm.time = time;
     vm.authentication = Authentication;
     vm.error = null;
     vm.form = {};
-    vm.remove = remove;
     vm.save = save;
-
-    // Remove existing Time
-    function remove() {
-      if (confirm('Are you sure you want to delete?')) {
-        vm.time.$remove($state.go('times.list'));
-      }
-    }
 
     // Save Time
     function save(isValid) {
