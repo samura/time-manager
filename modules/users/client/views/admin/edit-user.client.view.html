@@ -1,39 +1,76 @@
 <section>
   <div class="page-header">
-    <h1>User <span ng-bind="user.username"></span></h1>
+    <h1>User <span ng-bind="vm.user.username"></span></h1>
   </div>
   <div class="col-md-12">
-    <form name="userForm" ng-submit="update(userForm.$valid)" novalidate>
+    <form name="userForm" ng-submit="vm.update(userForm.$valid)" novalidate class="form-horizontal">
       <fieldset>
+        <div ng-show="vm.error" class="text-danger">
+          <strong ng-bind="vm.error"></strong>
+        </div>
         <div class="form-group" show-errors>
-          <label for="firstName">First Name</label>
-          <input type="text" id="firstName" name="firstName" class="form-control" ng-model="user.firstName" placeholder="First Name" required />
-          <div ng-messages="userForm.firstName.$error" role="alert">
-            <p class="help-block error-text" ng-message="required">First name is required.</p>
+          <label class="control-label col-sm-2" for="username">Username</label>
+          <div class="col-sm-10">
+            <input type="text" id="username" name="username" class="form-control" ng-model="vm.user.username" placeholder="Username" required />
+            <div ng-messages="userForm.username.$error" role="alert">
+              <p class="help-block error-text" ng-message="required">Username is required.</p>
+            </div>
           </div>
         </div>
         <div class="form-group" show-errors>
-          <label for="lastName">Last Name</label>
-          <input type="text" id="lastName" name="lastName" class="form-control" ng-model="user.lastName" placeholder="Last Name" required />
-          <div ng-messages="userForm.lastName.$error" role="alert">
-            <p class="help-block error-text" ng-message="required">Last name is required.</p>
+          <label class="control-label col-sm-2" for="firstName">First Name</label>
+          <div class="col-sm-10">
+            <input type="text" id="firstName" name="firstName" class="form-control" ng-model="vm.user.firstName" placeholder="First Name" required />
+            <div ng-messages="userForm.firstName.$error" role="alert">
+              <p class="help-block error-text" ng-message="required">First name is required.</p>
+            </div>
           </div>
         </div>
         <div class="form-group" show-errors>
-          <label class="control-label" for="roles">Roles</label>
-          <div class="controls">
-            <input class="form-control" type="text" name="roles" ng-model="user.roles" id="roles" ng-list required />
-            <div ng-messages="userForm.roles.$error" role="alert">
-              <p class="help-block error-text" ng-message="required">At least one role is required.</p>
+          <label class="control-label col-sm-2" for="lastName">Last Name</label>
+          <div class="col-sm-10">
+            <input type="text" id="lastName" name="lastName" class="form-control col-sm-10" ng-model="vm.user.lastName" placeholder="Last Name" required />
+            <div ng-messages="userForm.lastName.$error" role="alert">
+              <p class="help-block error-text" ng-message="required">Last name is required.</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" show-errors>
+          <label class="control-label col-sm-2" for="email">E-mail</label>
+          <div class="col-sm-10">
+            <input type="email" id="email" name="email" class="form-control" ng-model="vm.user.email" placeholder="E-mail" required />
+            <div ng-messages="userForm.email.$error" role="alert">
+              <p class="help-block error-text" ng-message="required">E-mail is required.</p>
+              <p class="help-block error-text" ng-message="email">Must be a valid e-mail.</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" show-errors>
+          <label class="control-label col-sm-2" for="workingHoursPerDay">Preferred working hours per day</label>
+          <div class="col-sm-10">
+            <input type="number" id="workingHoursPerDay" name="workingHoursPerDay" class="form-control" ng-model="vm.user.workingHoursPerDay" placeholder="Preferred working hours per day" required>
+            <div ng-messages="userForm.workingHoursPerDay.$error" role="alert">
+              <p class="help-block error-text" ng-message="required">Preferred working hours per day is required.</p>
+              <p class="help-block error-text" ng-message="number">Working hours per day has to be a valid number.</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" show-errors>
+          <label class="control-label col-sm-2" for="roles">Roles</label>
+          <div class="col-sm-10">
+            <div class="controls">
+              <select name="roles" class="form-control" ng-model="vm.user.roles" required ng-options="role for role in vm.roles" multiple></select>
+              <div ng-messages="userForm.roles.$error" role="alert">
+                <p class="help-block error-text" ng-message="required">At least one role is required.</p>
+              </div>
             </div>
           </div>
         </div>
         <div class="form-group">
-          <input type="submit" value="Update" class="btn btn-default">
-          <a href="#" ng-click="remove()" class="btn btn-danger">Remove</a>
-        </div>
-        <div ng-show="error" class="text-danger">
-          <strong ng-bind="error"></strong>
+          <div class="col-sm-offset-2 col-sm-10">
+            <a href="#" ui-sref="admin.users" class="btn btn-link"><i class="glyphicon glyphicon-chevron-left"></i> Back</a>
+            <button type="submit" class="btn btn-primary">Update</button>
+          </div>
         </div>
       </fieldset>
     </form>

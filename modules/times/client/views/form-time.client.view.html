@@ -3,35 +3,53 @@
     <h1>{{vm.time._id ? 'Edit Time' : 'New Time'}}</h1>
   </div>
   <div class="col-md-12">
-    <form name="vm.form.timeForm" class="form-horizontal" ng-submit="vm.save(vm.form.timeForm.$valid)" novalidate>
+    <form name="timeForm" class="form-horizontal" ng-submit="vm.save(timeForm.$valid)" novalidate>
       <fieldset>
 
-        <div ng-show="vm.error" class="text-danger">
+        <div ng-show="vm.error" class="col-sm-offset-2 alert alert-danger">
           <strong ng-bind="vm.error"></strong>
         </div>
 
-        <div class="form-group">
-          <label class="control-label" for="notes">Notes</label>
-          <input type="text" name="notes" data-ng-model="vm.time.notes" id="notes" class="form-control" placeholder="Notes">
+        <div class="form-group" show-errors>
+          <label class="control-label col-sm-2" for="notes">Notes</label>
+          <div class="col-sm-10">
+            <input type="text" name="notes" data-ng-model="vm.time.notes" id="notes" class="form-control" placeholder="Notes">
+          </div>
+        </div>
+
+        <div class="form-group" show-errors>
+          <label class="control-label col-sm-2" for="date">Date</label>
+          <div class="col-sm-10">
+            <p class="input-group">
+              <input type="text" name="date" class="form-control" uib-datepicker-popup="dd/MM/yyyy" ng-model="vm.time.date" is-open="vm.opened" close-text="Close" alt-input-formats="['d!/M!/yyyy']" required />
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default" ng-click="vm.opened = true"><i class="glyphicon glyphicon-calendar"></i></button>
+              </span>
+            </p>
+            <div ng-messages="timeForm.date.$error" role="alert">
+              <p class="help-block error-text" ng-message="required">A date is required.</p>
+              <p class="help-block error-text" ng-message="date">A valid date is required.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" show-errors>
+          <label class="control-label col-sm-2" for="notes">Hours</label>
+          <div class="col-sm-10">
+            <input type="number" name="hours" data-ng-model="vm.time.hours" id="hours" class="form-control" placeholder="Hours" required>
+            <div ng-messages="timeForm.hours.$error" role="alert">
+              <p class="help-block error-text" ng-message="required">The number of hours is required.</p>
+              <p class="help-block error-text" ng-message="number">A valid number of hours is required.</p>
+            </div>
+          </div>
         </div>
 
         <div class="form-group">
-          <label class="control-label" for="date">Date</label>
-          <p class="input-group">
-            <input type="text" class="form-control" uib-datepicker-popup="dd/MM/yyyy" ng-model="vm.time.date" is-open="vm.opened" close-text="Close" alt-input-formats="['d!/M!/yyyy']" />
-            <span class="input-group-btn">
-              <button type="button" class="btn btn-default" ng-click="vm.opened = true"><i class="glyphicon glyphicon-calendar"></i></button>
-            </span>
-          </p>
-        </div>
+          <div class="col-sm-offset-2 col-sm-10">
 
-        <div class="form-group">
-          <label class="control-label" for="notes">Hours</label>
-          <input type="number" name="hours" data-ng-model="vm.time.hours" id="hours" class="form-control" placeholder="Hours">
-        </div>
-
-        <div class="form-group">
-          <button type="submit" class="btn btn-default">{{vm.time._id ? 'Update' : 'Create'}}</button>
+            <a href="#" ui-sref="times.list" class="btn btn-link"><i class="glyphicon glyphicon-chevron-left"></i> Back</a>
+            <button type="submit" class="btn btn-primary">{{vm.time._id ? 'Update' : 'Create'}}</button>
+          </div>
         </div>
       </fieldset>
     </form>

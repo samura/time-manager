@@ -11,4 +11,10 @@ var path = require('path'),
  */
 module.exports = function (app, db) {
 
+  app.use(function (req, res, next) {
+    // sends the configuration information to the controller
+    req.itemsPerPage = app.locals.itemsPerPage;
+    
+    return next();
+  });
 };

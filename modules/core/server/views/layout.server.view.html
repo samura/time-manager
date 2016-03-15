@@ -46,6 +46,7 @@
   <!--Embedding The User Object-->
   <script type="text/javascript">
     var user = {{ user | json | safe }};
+    var itemsPerPage = {{itemsPerPage || 10}};
   </script>
 
   <!--Application JavaScript Files-->

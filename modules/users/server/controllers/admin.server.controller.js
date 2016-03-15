@@ -25,6 +25,9 @@ exports.update = function (req, res) {
   user.firstName = req.body.firstName;
   user.lastName = req.body.lastName;
   user.displayName = user.firstName + ' ' + user.lastName;
+  user.username = req.body.username;
+  user.email = req.body.email;
+  user.workingHoursPerDay = req.body.workingHoursPerDay;
   
   // only update roles if admin
   if(req.user.roles.indexOf('admin') !== -1) {

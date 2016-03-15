@@ -11,7 +11,7 @@
     Menus.addMenuItem('topbar', {
       title: 'Times',
       state: 'times.list',
-      roles: ['*']
+      roles: ['user', 'manager', 'admin']
     });
   }
 })();

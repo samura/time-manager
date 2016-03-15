@@ -19,10 +19,10 @@
     // Save Time
     function save(isValid) {
       if (!isValid) {
-        $scope.$broadcast('show-errors-check-validity', 'vm.form.timeForm');
+        $scope.$broadcast('show-errors-check-validity', 'timeForm');
         return false;
       }
-
+      
       if (vm.time._id) {
         vm.time.$update(successCallback, errorCallback);
       } else {
@@ -30,7 +30,10 @@
       }
 
       function successCallback(res) {
-        $state.go('times.list');
+        $state.go('times.list').then(function(state) {
+          // send the success message to the next controller
+          state.data.successMsg = 'The time was saved successfully.';
+        });
       }
 
       function errorCallback(res) {

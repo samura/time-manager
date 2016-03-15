@@ -3,6 +3,9 @@
   <div class="col-xs-offset-2 col-xs-8 col-md-offset-4 col-md-4">
     <form name="userForm" ng-submit="signin(userForm.$valid)" class="signin" novalidate autocomplete="off">
       <fieldset>
+        <uib-alert type="danger" ng-show="error" class="text-center text-danger">
+          <span ng-bind="error"></span>
+        </uib-alert>
         <div class="form-group" show-errors>
           <label for="username">Username</label>
           <input type="text" id="username" name="username" class="form-control" ng-model="credentials.username" placeholder="Username" lowercase required>
@@ -25,9 +28,6 @@
         <div class="text-center forgot-password">
           <a ui-sref="password.forgot">Forgot your password?</a>
         </div>
-        <uib-alert type="danger" ng-show="error" class="text-center text-danger">
-          <span ng-bind="error"></span>
-        </uib-alert>
       </fieldset>
     </form>
   </div>

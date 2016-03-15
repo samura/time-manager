@@ -20,7 +20,7 @@
         controller: 'TimesListController',
         controllerAs: 'vm',
         data: {
-          pageTitle: 'Times List'
+          pageTitle: 'Times'
         }
       })
       .state('times.export', {
@@ -42,7 +42,7 @@
         },
         data: {
           roles: ['user', 'admin'],
-          pageTitle : 'Times Create'
+          pageTitle : 'Create Time Entry'
         }
       })
       .state('times.edit', {
@@ -55,7 +55,7 @@
         },
         data: {
           roles: ['user', 'admin'],
-          pageTitle: 'Edit Time {{ timeResolve.title }}'
+          pageTitle: 'Edit Time Entry'
         }
       });
   }

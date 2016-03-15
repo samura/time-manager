@@ -1,31 +1,33 @@
-'use strict';
+(function () {
+  'use strict';
 
-angular.module('users.admin').controller('UserListController', ['$scope', '$filter', 'Admin',
-  function ($scope, $filter, Admin) {
-    Admin.query(function (data) {
-      $scope.users = data;
-      $scope.buildPager();
+  angular
+    .module('users.admin')
+    .controller('UserListController', UserListController);
+
+  UserListController.$inject = ['$scope', '$filter', 'Admin', '$state', '$timeout'];
+  
+  function UserListController ($scope, $filter, Admin, $state, $timeout) {
+    var vm = this;
+    vm.users = Admin.query();
+    vm.remove = remove;
+
+    // check success message
+    $timeout(function(){
+      vm.successMsg = $state.current.data.successMsg;
+      // dismiss message
+      $timeout(function() { delete vm.successMsg; }, 5000);
     });
+    
+    // Remove existing User
+    function remove (user) {
+      if (confirm('Are you sure you want to delete this user?')) {
+        user.$remove();
 
-    $scope.buildPager = function () {
-      $scope.pagedItems = [];
-      $scope.itemsPerPage = 15;
-      $scope.currentPage = 1;
-      $scope.figureOutItemsToDisplay();
-    };
-
-    $scope.figureOutItemsToDisplay = function () {
-      $scope.filteredItems = $filter('filter')($scope.users, {
-        $: $scope.search
-      });
-      $scope.filterLength = $scope.filteredItems.length;
-      var begin = (($scope.currentPage - 1) * $scope.itemsPerPage);
-      var end = begin + $scope.itemsPerPage;
-      $scope.pagedItems = $scope.filteredItems.slice(begin, end);
-    };
-
-    $scope.pageChanged = function () {
-      $scope.figureOutItemsToDisplay();
-    };
+        $state.reload().then(function (state) {
+          state.data.successMsg = 'Time user was deleted successfully.';
+        });
+      }
+    }
   }
-]);
+})();

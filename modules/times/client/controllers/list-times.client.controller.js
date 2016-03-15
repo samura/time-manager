@@ -5,9 +5,9 @@
     .module('times')
     .controller('TimesListController', TimesListController);
 
-  TimesListController.$inject = ['TimesService', 'Authentication', '$state'];
+  TimesListController.$inject = ['TimesService', 'Authentication', '$state', '$timeout'];
 
-  function TimesListController(timesService, Authentication, $state) {
+  function TimesListController(timesService, Authentication, $state, $timeout) {
     var vm = this;
 
     if(Authentication.user) {
@@ -21,6 +21,14 @@
       date: {}
     };
     vm.getTimes = getTimes;
+    vm.humanTime = humanTime;
+    
+    // check success message
+    $timeout(function(){
+      vm.successMsg = $state.current.data.successMsg;
+      // dismiss message
+      $timeout(function() { delete vm.successMsg; }, 5000);
+    });
     
     function enoughHours(time) {
       
@@ -39,7 +47,9 @@
       if (confirm('Are you sure you want to delete this time?')) {
         time.$remove();
 
-        $state.reload();
+        $state.reload().then(function (state) {
+          state.data.successMsg = 'Time time was deleted successfully.';
+        });
       }
     }
     
@@ -54,6 +64,18 @@
     function paginationAndTotalsCallback (pagination, totals) {
       vm.pagination = pagination;
       vm.totals = totals;
+    }
+    
+    function humanTime(hours) {
+      var fHours = Math.floor(hours);
+      var fMinutes = hours*60%60;
+      
+      var ret = fHours + ' hours';
+      if(fMinutes > 0) {
+        ret += ' and ' + fMinutes + ' minutes';
+      }
+      
+      return ret;
     }
     
     getTimes();

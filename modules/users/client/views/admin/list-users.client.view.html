@@ -4,18 +4,36 @@
       <div class="col-md-4">
         <h1>Users</h1>
       </div>
-      <div class="col-md-4" style="margin-top: 2em">
-        <input class="form-control col-md-4" type="text" ng-model="search" placeholder="Search" ng-change="figureOutItemsToDisplay()" />
-      </div>
     </div>
   </div>
-  <div class="list-group">
-    <a ng-repeat="user in pagedItems" ui-sref="admin.user({userId: user._id})" class="list-group-item">
-      <h4 class="list-group-item-heading" ng-bind="user.username"></h4>
-      <p class="list-group-item-text pull-right small" ng-bind="user.roles"></p>
-      <p class="list-group-item-text" ng-bind="user.email"></p>
-    </a>
+  
+  <div class="alert alert-success" ng-if="vm.successMsg" role="alert">
+    <b ng-bind="vm.successMsg"></b>
   </div>
 
-  <uib-pagination ng-if="filterLength > itemsPerPage" boundary-links="true" max-size="8" items-per-page="itemsPerPage" total-items="filterLength" ng-model="currentPage" ng-change="pageChanged()"></uib-pagination>
+  <table class="table table-striped table-hover table-condensed">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Username</th>
+        <th>E-mail</th>
+        <th>Roles</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr data-ng-repeat="user in vm.users">
+        <td data-ng-bind="user.displayName"></td>
+        <td data-ng-bind="user.username"></td>
+        <td data-ng-bind="user.email"></td>
+        <td data-ng-bind="user.roles"></td>
+        <td>
+          <span>
+            <a href="#" ui-sref="admin.user({ userId: user._id })" class="btn btn-primary btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>
+            <a href="#" ng-click="vm.remove(user)" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-trash"></i></a>
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </section>
