@@ -885,10 +885,10 @@ describe('Time CRUD tests', function () {
               var times = res.body.docs;
 
               res.body.total.should.be.equal(30);
-              times.should.be.instanceof(Array).and.have.lengthOf(20);
+              times.should.be.instanceof(Array).and.have.lengthOf(10);
 
               // Request times
-              agent.get('/api/times?p=2')
+              agent.get('/api/times?p=3')
                 .expect(200)
                 .end(function (err, res) {
                   if (err) {
@@ -938,7 +938,8 @@ describe('Time CRUD tests', function () {
             }
           
             // Request the first page of times
-            agent.get('/api/times?date[to]=' + (new Date(1457804582680 - 17280000)).toISOString())
+            var p = JSON.stringify({ date: { to: (new Date(1457804582680 - 17280000)).toISOString() } });         
+            agent.get('/api/times?filters=' + p)
               .expect(200)
               .end(function (err, res) {
                 if (err) {
@@ -986,7 +987,8 @@ describe('Time CRUD tests', function () {
             }
           
             // Request the first page of times
-            agent.get('/api/times?date[from]=' + (new Date()).toISOString())
+            var p = JSON.stringify({ date: { from: (new Date()).toISOString() } });
+            agent.get('/api/times?filters=' + p)
               .expect(200)
               .end(function (err, res) {
                 if (err) {
@@ -1041,7 +1043,8 @@ describe('Time CRUD tests', function () {
               }
 
               // Request the first page of times
-              agent.get('/api/times?date[to]=' + (new Date(1457804582680 + 1728000000)).toISOString() + '&date[from]=' + (new Date(1457804582680 - 1728000000)).toISOString())
+              var p = JSON.stringify({ date: { from: (new Date(1457804582680 - 1728000000)).toISOString(), to: (new Date(1457804582680 + 1728000000)).toISOString() } });
+              agent.get('/api/times?filters=' + p)
                 .expect(200)
                 .end(function (err, res) {
                   if (err) {

@@ -71,6 +71,6 @@
   newTime.$inject = ['TimesService'];
 
   function newTime(timesService) {
-    return new (timesService(null))({date: new Date()});
+    return new (timesService(null))({ date: new Date() });
   }
 })();

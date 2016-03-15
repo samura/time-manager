@@ -80,7 +80,7 @@ exports.delete = function (req, res) {
  */
 exports.list = function (req, res) {  
   
-  Time.paginate(req.filters, { limit: req.itemsPerPage, page: req.page, sort: '-date', populate: [{path: 'user', select: 'displayName workingHoursPerDay'}] }, function (err, result) {
+  Time.paginate(req.filters, { limit: req.itemsPerPage, page: req.page, sort: '-date', populate: [{ path: 'user', select: 'displayName workingHoursPerDay' }] }, function (err, result) {
     
     if (err) {
       return res.status(400).send({

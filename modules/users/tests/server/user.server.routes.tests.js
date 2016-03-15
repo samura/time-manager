@@ -275,6 +275,7 @@ describe('User CRUD tests', function () {
           // Get single user information from the database
 
           var userUpdate = {
+            username: 'admin_update',
             firstName: 'admin_update_first',
             lastName: 'admin_update_last',
             roles: ['admin']
@@ -350,6 +351,7 @@ describe('User CRUD tests', function () {
           // Get single user information from the database
 
           var userUpdate = {
+            username: 'admin_update',
             firstName: 'admin_update_first',
             lastName: 'admin_update_last',
           };
@@ -375,6 +377,52 @@ describe('User CRUD tests', function () {
     });
   });
   
+  it('should not be able to update admin information if manager', function (done) {
+    user.roles = ['user', 'manager'];
+
+    user.save(function (err) {
+      should.not.exist(err);
+      
+      // create an admin
+      var user2 = new User(_user);
+      user2.username = 'admin';
+      user2.email = 'admin@localhost';
+      user2.roles = ['user', 'admin'];
+      user2.save(function (err) {
+        should.not.exist(err);
+
+        agent.post('/api/auth/signin')
+          .send(credentials)
+          .expect(200)
+          .end(function (signinErr, signinRes) {
+            // Handle signin error
+            if (signinErr) {
+              return done(signinErr);
+            }
+
+            // Get single user information from the database
+
+            var userUpdate = {
+              username: 'admin_update',
+              firstName: 'admin_update_first',
+              lastName: 'admin_update_last',
+            };
+
+            agent.put('/api/users/' + user2._id)
+              .send(userUpdate)
+              .expect(403)
+              .end(function (usersGetErr, usersGetRes) {
+                if (usersGetErr) {
+                  return done(usersGetErr);
+                }
+
+                return done();
+              });
+          });
+      });
+    });
+  });
+  
   it('should not be able to update a single user roles if manager', function (done) {
     user.roles = ['user', 'manager'];
 
@@ -392,6 +440,7 @@ describe('User CRUD tests', function () {
           // Get single user information from the database
 
           var userUpdate = {
+            username: 'admin_up date',
             firstName: 'admin_update_first',
             lastName: 'admin_update_last',
             roles: ['admin'] // this should be ignored
@@ -783,6 +832,7 @@ describe('User CRUD tests', function () {
           }
 
           var userUpdate = {
+            username: 'username_update',
             firstName: 'user_update_first',
             lastName: 'user_update_last',
           };
@@ -824,6 +874,7 @@ describe('User CRUD tests', function () {
           }
 
           var userUpdate = {
+            username: 'username_update',
             firstName: 'user_update_first',
             lastName: 'user_update_last',
             roles: ['user', 'admin']
@@ -866,6 +917,7 @@ describe('User CRUD tests', function () {
           }
 
           var userUpdate = {
+            username: 'admin_update',
             firstName: 'user_update_first',
             lastName: 'user_update_last',
             roles: ['admin']
@@ -892,7 +944,7 @@ describe('User CRUD tests', function () {
         });
     });
   });
-
+  
   it('should not be able to update own user details with existing username', function (done) {
 
     var _user2 = _user;
@@ -978,6 +1030,7 @@ describe('User CRUD tests', function () {
           }
 
           var userUpdate = {
+            username: 'username_update',
             firstName: 'user_update_first',
             lastName: 'user_update_last',
             email: user.email
@@ -1011,6 +1064,7 @@ describe('User CRUD tests', function () {
       should.not.exist(err);
 
       var userUpdate = {
+        username: 'username_update',
         firstName: 'user_update_first',
         lastName: 'user_update_last',
       };
