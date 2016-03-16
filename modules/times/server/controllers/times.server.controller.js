@@ -76,7 +76,7 @@ exports.delete = function (req, res) {
 };
 
 /**
- * List of Times
+ * List time entries paginated
  */
 exports.list = function (req, res) {  
   
@@ -87,12 +87,15 @@ exports.list = function (req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     }
-      
+    
+    result.dayTotals = {};
+    
+    //
     if(!result.docs.length) {
       return res.json(result);
     }
       
-    // get the sums for each day, only for the results on .paginate()
+    // get the sums for each day only, for the results on .paginate()
     // the high needs to be cloned to work if length == 1
     var dateLow = result.docs[result.docs.length-1].date,
       dateHigh = new Date(result.docs[0].date.getTime());
@@ -127,16 +130,16 @@ exports.list = function (req, res) {
         });
       }
 
-      var dayTotals = {};
+      // formats the dayTotals object
       timeSums.forEach(function (timeSum) {
-        if(typeof dayTotals[timeSum._id.user] === 'undefined') {
-          dayTotals[timeSum._id.user] = {};
+        // start the user object
+        if(typeof result.dayTotals[timeSum._id.user] === 'undefined') {
+          result.dayTotals[timeSum._id.user] = {};
         }
 
-        dayTotals[timeSum._id.user][timeSum._id.date] = timeSum.time;
+        result.dayTotals[timeSum._id.user][timeSum._id.date] = timeSum.time;
 
       });
-      result.dayTotals = dayTotals;
       
       // adds a flag to know if a user can be edited/removed
       result.docs = result.docs.map(function(time) {
@@ -199,8 +202,11 @@ exports.filters = function(req, res, next) {
     var reqFilters = JSON.parse(req.query.filters);
     
     // makes sures that at least one of the filters is not undefined
-    // this way we dont create an emptu date: {} which returns no result
-    if(typeof reqFilters.date !== 'undefined' && (typeof reqFilters.date.from !== 'undefined' || typeof reqFilters.date.to !== 'undefined')) {
+    // this way we dont create an empty {date: {}} which would return no result
+    if(typeof reqFilters.date !== 'undefined' && 
+       (typeof reqFilters.date.from !== 'undefined' ||
+        typeof reqFilters.date.to !== 'undefined')) {
+      
       filters.date = {};
 
       if(typeof reqFilters.date.from !== 'undefined') {
@@ -220,7 +226,7 @@ exports.filters = function(req, res, next) {
     }
   }
   
-  // if not admin or manager, you can only get what is yours
+  // if not admin or manager, you can only get times you own
   if(req.user.roles.indexOf('admin') === -1 && req.user.roles.indexOf('manager') === -1) {
     filters.user = mongoose.Types.ObjectId(req.user.id);
   }

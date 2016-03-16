@@ -12,6 +12,7 @@
     vm.users = Admin.query();
     vm.remove = remove;
 
+    // is the logged in user an admin
     if(Authentication.user) {
       vm.isAdmin = Authentication.user.roles.indexOf('admin') !== -1;
     }
@@ -28,6 +29,7 @@
       if (confirm('Are you sure you want to delete this user?')) {
         user.$remove();
 
+        // reload the state and show a success message
         $state.reload().then(function (state) {
           state.data.successMsg = 'Time user was deleted successfully.';
         });

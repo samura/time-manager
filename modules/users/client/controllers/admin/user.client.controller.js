@@ -13,9 +13,12 @@
     vm.authentication = Authentication;
     vm.user = userResolve;
     vm.update = update;
+    // list of roles for the select
     vm.roles = ['user', 'manager', 'admin'];
 
+    // save the user information
     function update (isValid) {
+      // show errors if not valid
       if (!isValid) {
         $scope.$broadcast('show-errors-check-validity', 'userForm');
 
@@ -24,6 +27,7 @@
 
       var user = vm.user;
 
+      // save using the $resource
       user.$update(function () {
         $state.go('admin.users').then(function(state) {
           // send the success message to the next controller
