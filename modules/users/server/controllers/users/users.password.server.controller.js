@@ -10,9 +10,9 @@ var path = require('path'),
   User = mongoose.model('User'),
   nodemailer = require('nodemailer'),
   async = require('async'),
-  crypto = require('crypto');
-
-var smtpTransport = nodemailer.createTransport(config.mailer.options);
+  crypto = require('crypto'),
+  smtpPTransport = require('nodemailer-smtp-transport'),
+  smtpTransport = nodemailer.createTransport(smtpPTransport(config.mailer.config));
 
 /**
  * Forgot for reset password (forgot POST)
@@ -74,6 +74,7 @@ exports.forgot = function (req, res, next) {
         html: emailHTML
       };
       smtpTransport.sendMail(mailOptions, function (err) {
+        console.log(err);
         if (!err) {
           res.send({
             message: 'An email has been sent to the provided email with further instructions.'

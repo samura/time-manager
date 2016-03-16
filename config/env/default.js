@@ -52,6 +52,18 @@ module.exports = {
       }
     }
   },
+  mailer: {
+    from: process.env.MAILER_FROM || 'joao.campos@samura.pt',
+    config: {
+      host: 'pro.turbo-smtp.com',
+      port: 25,
+      secure: false,
+      auth: {
+        user: 'joao.campos@samura.pt',
+        pass: 'Y2Khobjs'
+      }
+    }
+  },
   seedDB: {
     seed: process.env.MONGO_SEED === 'true' ? true : false,
     options: {
