@@ -55,33 +55,33 @@ Make sure you have installed all of the following prerequisites on your developm
 ## Installation
 
 Clone the project:
-```bash
+```
 $ git clone git@git.toptal.com:Joao-Campos/joao-campos-2nd-attempt.git time-management
-````
+```
 
 Add all the dependencies:
-```bash
+```
 $ npm i
 ```
 
 ## Tests
 To run **all the tests** do:
-```bash
+```
 $ MONGO_SEED=true gulp test
 ```
 
 For **server side** (API) tests:
-```bash
+```
 $ gulp test:server
 ```
 
 For **client side** (Angularjs) tests:
-```bash
+```
 $ gulp test:client
 ```
 
 For **e2e** tests:
-```bash
+```
 $ MONGO_SEED=true gulp test:e2e
 ```
 
@@ -89,7 +89,7 @@ $ MONGO_SEED=true gulp test:e2e
 ## Running
 
 **First time** running the project we need some content on the DB:
-```bash
+```
 $ MONGO_SEED=true gulp
 ```
 
@@ -97,19 +97,19 @@ Access your project on: http://localhost:3000
 
 If you run the project with MONGO_SEED you have the following available users with 3 different roles:
 
-**User**   
-username: user    
+**User**
+username: user
 password: Temporary$4
 
-**Manager**   
-username: manager    
+**Manager**
+username: manager
 password: Temporary$4
 
-**Administrator**   
-username: admin    
+**Administrator**
+username: admin
 password: Temporary$4
 
 Next time you run the project, it can be done with just:
-```bash
+```
 $ gulp
 ```
