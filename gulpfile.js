@@ -361,7 +361,8 @@ gulp.task('webdriver_standalone', webdriver_standalone);
 gulp.task('protractor', ['webdriver_update'], function () {
   gulp.src([])
     .pipe(protractor({
-      configFile: 'protractor.conf.js'
+      configFile: 'protractor.conf.js',
+      args: ['--verbose']
     }))
     .on('end', function() {
       console.log('E2E Testing complete');

@@ -8,7 +8,7 @@
       $httpBackend,
       $state,
       Authentication,
-      TimesService,
+      timesService,
       mockTime;
 
     // The $resource service augments the response object with methods for updating and deleting the resource.
@@ -44,13 +44,14 @@
       $httpBackend = _$httpBackend_;
       $state = _$state_;
       Authentication = _Authentication_;
-      TimesService = _TimesService_;
+      timesService = _TimesService_;
 
       // create mock time
-      mockTime = new TimesService({
+      mockTime = new (timesService(null))({
         _id: '525a8422f6d0f87f0e407a33',
-        title: 'An Time about MEAN',
-        content: 'MEAN rocks!'
+        notes: 'notes',
+        hours: 1.2,
+        date: new Date().toISOString()
       });
 
       // Mock logged in user
@@ -65,7 +66,7 @@
       });
 
       //Spy on state go
-      spyOn($state, 'go');
+      spyOn($state, 'go').and.callThrough();
     }));
 
     describe('vm.save() as create', function () {
@@ -73,9 +74,10 @@
 
       beforeEach(function () {
         // Create a sample time object
-        sampleTimePostData = new TimesService({
-          title: 'An Time about MEAN',
-          content: 'MEAN rocks!'
+        sampleTimePostData = new (timesService(null))({
+          notes: 'notes',
+          hours: 1.2,
+          date: new Date().toISOString()
         });
 
         $scope.vm.time = sampleTimePostData;
@@ -83,23 +85,21 @@
 
       it('should send a POST request with the form input values and then locate to new object URL', inject(function (TimesService) {
         // Set POST response
-        $httpBackend.expectPOST('api/times', sampleTimePostData).respond(mockTime);
+        $httpBackend.expectPOST('api/times', sampleTimePostData).respond(JSON.stringify(mockTime));
 
         // Run controller functionality
         $scope.vm.save(true);
         $httpBackend.flush();
 
         // Test URL redirection after the time was created
-        expect($state.go).toHaveBeenCalledWith('times.view', {
-          timeId: mockTime._id
-        });
+        expect($state.go).toHaveBeenCalledWith('times.list');
       }));
 
       it('should set $scope.vm.error if error', function () {
         var errorMessage = 'this is an error message';
-        $httpBackend.expectPOST('api/times', sampleTimePostData).respond(400, {
+        $httpBackend.expectPOST('api/times', sampleTimePostData).respond(400, JSON.stringify({
           message: errorMessage
-        });
+        }));
 
         $scope.vm.save(true);
         $httpBackend.flush();
@@ -123,50 +123,20 @@
         $httpBackend.flush();
 
         // Test URL location to new object
-        expect($state.go).toHaveBeenCalledWith('times.view', {
-          timeId: mockTime._id
-        });
+        expect($state.go).toHaveBeenCalledWith('times.list');
       }));
 
       it('should set $scope.vm.error if error', inject(function (TimesService) {
         var errorMessage = 'error';
-        $httpBackend.expectPUT(/api\/times\/([0-9a-fA-F]{24})$/).respond(400, {
+        $httpBackend.expectPUT(/api\/times\/([0-9a-fA-F]{24})$/).respond(400, JSON.stringify({
           message: errorMessage
-        });
+        }));
 
         $scope.vm.save(true);
         $httpBackend.flush();
 
         expect($scope.vm.error).toBe(errorMessage);
       }));
-    });
-
-    describe('vm.remove()', function () {
-      beforeEach(function () {
-        //Setup times
-        $scope.vm.time = mockTime;
-      });
-
-      it('should delete the time and redirect to times', function () {
-        //Return true on confirm message
-        spyOn(window, 'confirm').and.returnValue(true);
-
-        $httpBackend.expectDELETE(/api\/times\/([0-9a-fA-F]{24})$/).respond(204);
-
-        $scope.vm.remove();
-        $httpBackend.flush();
-
-        expect($state.go).toHaveBeenCalledWith('times.list');
-      });
-
-      it('should should not delete the time and not redirect', function () {
-        //Return false on confirm message
-        spyOn(window, 'confirm').and.returnValue(false);
-
-        $scope.vm.remove();
-
-        expect($state.go).not.toHaveBeenCalled();
-      });
     });
   });
 })();

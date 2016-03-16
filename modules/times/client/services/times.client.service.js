@@ -49,10 +49,14 @@
    */
   function transformDate(response) {
     
-    var data = JSON.parse(response);
-    data.date = new Date(data.date);
-    
-    return data;
+    try {
+      var data = JSON.parse(response);
+      data.date = new Date(data.date);
+
+      return data;
+    } catch(e) {
+      return response;
+    }
   }
   
   /**

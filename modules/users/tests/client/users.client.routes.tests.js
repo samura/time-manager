@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   'use strict';
 
   describe('Users Route Tests', function () {
@@ -75,23 +75,23 @@
           expect(passwordstate.templateUrl).toBe('modules/users/client/views/settings/change-password.client.view.html');
         });
       });
-
-      describe('Accounts Route', function () {
-        var accountsstate;
+      
+      describe('Configuration Route', function () {
+        var passwordstate;
         beforeEach(inject(function ($state) {
-          accountsstate = $state.get('settings.accounts');
+          passwordstate = $state.get('settings.configuration');
         }));
 
         it('Should have the correct URL', function () {
-          expect(accountsstate.url).toEqual('/accounts');
+          expect(passwordstate.url).toEqual('/configuration');
         });
 
         it('Should not be abstract', function () {
-          expect(accountsstate.abstract).toBe(undefined);
+          expect(passwordstate.abstract).toBe(undefined);
         });
 
         it('Should have templateUrl', function () {
-          expect(accountsstate.templateUrl).toBe('modules/users/client/views/settings/manage-social-accounts.client.view.html');
+          expect(passwordstate.templateUrl).toBe('modules/users/client/views/settings/configuration.client.view.html');
         });
       });
 

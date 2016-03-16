@@ -46,7 +46,7 @@
         };
         var promise = authInterceptor.responseError(response);
         expect($q.reject).toHaveBeenCalled();
-        expect($state.transitionTo).toHaveBeenCalledWith('forbidden');
+        expect($state.transitionTo).toHaveBeenCalledWith('authentication.signin');
       });
     });
 

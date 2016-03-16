@@ -4,7 +4,7 @@
   describe('Times Route Tests', function () {
     // Initialize global variables
     var $scope,
-      TimesService;
+      timesService;
 
     //We can start by loading the main application module
     beforeEach(module(ApplicationConfiguration.applicationModuleName));
@@ -15,7 +15,7 @@
     beforeEach(inject(function ($rootScope, _TimesService_) {
       // Set a new global scope
       $scope = $rootScope.$new();
-      TimesService = _TimesService_;
+      timesService = _TimesService_;
     }));
 
     describe('Route Config', function () {
@@ -57,57 +57,6 @@
         });
       });
 
-      describe('View Route', function () {
-        var viewstate,
-          TimesController,
-          mockTime;
-
-        beforeEach(inject(function ($controller, $state, $templateCache) {
-          viewstate = $state.get('times.view');
-          $templateCache.put('modules/times/client/views/view-time.client.view.html', '');
-
-          // create mock time
-          mockTime = new TimesService({
-            _id: '525a8422f6d0f87f0e407a33',
-            title: 'An Time about MEAN',
-            content: 'MEAN rocks!'
-          });
-
-          //Initialize Controller
-          TimesController = $controller('TimesController as vm', {
-            $scope: $scope,
-            timeResolve: mockTime
-          });
-        }));
-
-        it('Should have the correct URL', function () {
-          expect(viewstate.url).toEqual('/:timeId');
-        });
-
-        it('Should have a resolve function', function () {
-          expect(typeof viewstate.resolve).toEqual('object');
-          expect(typeof viewstate.resolve.timeResolve).toEqual('function');
-        });
-
-        it('should respond to URL', inject(function ($state) {
-          expect($state.href(viewstate, {
-            timeId: 1
-          })).toEqual('/times/1');
-        }));
-
-        it('should attach an time to the controller scope', function () {
-          expect($scope.vm.time._id).toBe(mockTime._id);
-        });
-
-        it('Should not be abstract', function () {
-          expect(viewstate.abstract).toBe(undefined);
-        });
-
-        it('Should have templateUrl', function () {
-          expect(viewstate.templateUrl).toBe('modules/times/client/views/view-time.client.view.html');
-        });
-      });
-
       describe('Create Route', function () {
         var createstate,
           TimesController,
@@ -118,7 +67,7 @@
           $templateCache.put('modules/times/client/views/form-time.client.view.html', '');
 
           // create mock time
-          mockTime = new TimesService();
+          mockTime = new (timesService(null))();
 
           //Initialize Controller
           TimesController = $controller('TimesController as vm', {
@@ -164,10 +113,11 @@
           $templateCache.put('modules/times/client/views/form-time.client.view.html', '');
 
           // create mock time
-          mockTime = new TimesService({
+          mockTime = new (timesService(null))({
             _id: '525a8422f6d0f87f0e407a33',
-            title: 'An Time about MEAN',
-            content: 'MEAN rocks!'
+            notes: 'notes',
+            date: new Date().toISOString(),
+            hours: 1.2
           });
 
           //Initialize Controller
@@ -203,9 +153,33 @@
         it('Should have templateUrl', function () {
           expect(editstate.templateUrl).toBe('modules/times/client/views/form-time.client.view.html');
         });
+      });
+      
+      describe('Export Route', function () {
+        var exportstate,
+          TimesController,
+          mockTime;
 
-        xit('Should go to unauthorized route', function () {
+        beforeEach(inject(function ($controller, $state, $templateCache) {
+          exportstate = $state.get('times.export');
+          $templateCache.put('modules/times/client/views/export-times.client.view.html', '');
 
+          //Initialize Controller
+          TimesController = $controller('TimesExportController as vm', {
+            $scope: $scope
+          });
+        }));
+
+        it('Should have the correct URL', function () {
+          expect(exportstate.url).toEqual('/export');
+        });
+
+        it('Should not be abstract', function () {
+          expect(exportstate.abstract).toBe(undefined);
+        });
+
+        it('Should have templateUrl', function () {
+          expect(exportstate.templateUrl).toBe('modules/times/client/views/export-times.client.view.html');
         });
       });
 

@@ -28,7 +28,7 @@
         <td data-ng-bind="user.email"></td>
         <td data-ng-bind="user.roles"></td>
         <td>
-          <span>
+          <span ng-if="vm.isAdmin || user.roles.indexOf('admin') === -1">
             <a href="#" ui-sref="admin.user({ userId: user._id })" class="btn btn-primary btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>
             <a href="#" ng-click="vm.remove(user)" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-trash"></i></a>
           </span>

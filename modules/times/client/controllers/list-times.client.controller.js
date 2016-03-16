@@ -37,7 +37,6 @@
       var date = ('0' + dateObj.getDate()).slice(-2) + '/' +
         ('0' + (dateObj.getMonth()+1)).slice(-2) + '/' +
         dateObj.getFullYear();
-
       
       return time.user.workingHoursPerDay <= vm.totals[time.user._id][date] ? 'success': 'danger';
     }

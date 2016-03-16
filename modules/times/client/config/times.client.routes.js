@@ -71,6 +71,10 @@
   newTime.$inject = ['TimesService'];
 
   function newTime(timesService) {
-    return new (timesService(null))({ date: new Date() });
+    
+    var date = new Date();
+    date.setHours(2);
+    
+    return new (timesService(null))({ date: date });
   }
 })();

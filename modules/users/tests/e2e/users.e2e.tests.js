@@ -272,7 +272,7 @@ describe('Users E2E Tests:', function () {
       // Click Submit button
       element(by.css('button[type=submit]')).click();
       // Password Error
-      expect(element.all(by.css('strong')).get(0).getText()).toBe('Email already exists');
+      expect(element.all(by.css('strong')).get(0).getText()).toBe('Email already exists.');
     });
 
     it('Should report Username already exists', function () {
@@ -291,9 +291,8 @@ describe('Users E2E Tests:', function () {
       // Click Submit button
       element(by.css('button[type=submit]')).click();
       // Password Error
-      expect(element.all(by.css('strong')).get(0).getText()).toBe('Username already exists');
+      expect(element.all(by.css('strong')).get(0).getText()).toBe('Username already exists.');
     });
-
   });
 
   describe('Signin Validation', function () {
@@ -325,6 +324,45 @@ describe('Users E2E Tests:', function () {
       expect(browser.getCurrentUrl()).toEqual('http://localhost:3001/');
     });
 
+  });
+  
+  describe ('Change Configuration Settings', function () {
+    
+    it('Should report a missing required configuration', function () {
+      browser.get('http://localhost:3001/settings/configuration');
+      // Clear the configuration
+      element(by.model('user.workingHoursPerDay')).clear();
+      element(by.css('button[type=submit]')).click();
+      // Password Errors
+      expect(element.all(by.css('.error-text')).get(0).getText()).toBe('Preferred working hours per day is required.');
+    });
+    
+    it('Should report a bogus configuration', function () {
+      browser.get('http://localhost:3001/settings/configuration');
+      // Clear the configuration
+      element(by.model('user.workingHoursPerDay')).clear().sendKeys('-1-1');
+      element(by.css('button[type=submit]')).click();
+      // Password Errors
+      expect(element.all(by.css('.error-text')).get(0).getText()).toBe('Preferred working hours per day is not valid.');
+    });
+    
+    it('Should report a configuration < 0', function () {
+      browser.get('http://localhost:3001/settings/configuration');
+      // Clear the configuration
+      element(by.model('user.workingHoursPerDay')).clear().sendKeys('-1');
+      element(by.css('button[type=submit]')).click();
+      // Password Errors
+      expect(element.all(by.css('.alert-danger strong')).get(0).getText()).toBe('The preferred number of working hours per day must be 0 or higher');
+    });
+    
+    it('Should save a valid configuration', function () {
+      browser.get('http://localhost:3001/settings/configuration');
+      // Clear the configuration
+      element(by.model('user.workingHoursPerDay')).sendKeys('1');
+      element(by.css('button[type=submit]')).click();
+      // Password Errors
+      expect(element.all(by.css('.alert-success strong')).get(0).getText()).toBe('Configuration saved successfully.');
+    });
   });
 
   describe ('Change Password Settings Validation', function () {
@@ -436,7 +474,7 @@ describe('Users E2E Tests:', function () {
       // Click Submit button
       element(by.css('button[type=submit]')).click();
       // Password Changed
-      expect(element.all(by.css('.text-success')).get(0).getText()).toBe('Password Changed Successfully');
+      expect(element.all(by.css('.alert-success strong')).get(0).getText()).toBe('Password changed successfully.');
     });
   });
 });

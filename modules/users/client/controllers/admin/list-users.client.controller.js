@@ -5,13 +5,17 @@
     .module('users.admin')
     .controller('UserListController', UserListController);
 
-  UserListController.$inject = ['$scope', '$filter', 'Admin', '$state', '$timeout'];
+  UserListController.$inject = ['$scope', 'Authentication', '$filter', 'Admin', '$state', '$timeout'];
   
-  function UserListController ($scope, $filter, Admin, $state, $timeout) {
+  function UserListController ($scope, Authentication, $filter, Admin, $state, $timeout) {
     var vm = this;
     vm.users = Admin.query();
     vm.remove = remove;
 
+    if(Authentication.user) {
+      vm.isAdmin = Authentication.user.roles.indexOf('admin') !== -1;
+    }
+    
     // check success message
     $timeout(function(){
       vm.successMsg = $state.current.data.successMsg;

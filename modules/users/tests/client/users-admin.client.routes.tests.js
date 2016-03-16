@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   'use strict';
 
   describe('Users Admin Route Tests', function () {
@@ -38,33 +38,14 @@
         });
       });
 
-      describe('View Route', function () {
-        var viewstate;
-        beforeEach(inject(function ($state) {
-          viewstate = $state.get('admin.user');
-        }));
-
-        it('Should have the correct URL', function () {
-          expect(viewstate.url).toEqual('/users/:userId');
-        });
-
-        it('Should not be abstract', function () {
-          expect(viewstate.abstract).toBe(undefined);
-        });
-
-        it('Should have templateUrl', function () {
-          expect(viewstate.templateUrl).toBe('modules/users/client/views/admin/view-user.client.view.html');
-        });
-      });
-
       describe('Edit Route', function () {
         var editstate;
         beforeEach(inject(function ($state) {
-          editstate = $state.get('admin.user-edit');
+          editstate = $state.get('admin.user');
         }));
 
         it('Should have the correct URL', function () {
-          expect(editstate.url).toEqual('/users/:userId/edit');
+          expect(editstate.url).toEqual('/users/:userId');
         });
 
         it('Should not be abstract', function () {
