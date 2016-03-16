@@ -36,12 +36,14 @@ module.exports = {
     title: defaultEnvConfig.app.title + ' - Test Environment'
   },
   mailer: {
-    from: process.env.MAILER_FROM || 'MAILER_FROM',
-    options: {
-      service: process.env.MAILER_SERVICE_PROVIDER || 'MAILER_SERVICE_PROVIDER',
+    from: process.env.MAILER_FROM || 'joao.campos@samura.pt',
+    config: {
+      host: 'NONE',
+      port: 25,
+      secure: false,
       auth: {
-        user: process.env.MAILER_EMAIL_ID || 'MAILER_EMAIL_ID',
-        pass: process.env.MAILER_PASSWORD || 'MAILER_PASSWORD'
+        user: 'INVALID',
+        pass: 'INVALID'
       }
     }
   },
